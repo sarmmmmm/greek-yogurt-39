@@ -241,3 +241,24 @@
 
     function checkIndividual() {
         const allChecked = Array.from(toppingBoxes).every(box => box.checked);
+        checkAllBox.checked = allChecked;
+    }
+
+    function submitOrder(event) {
+        event.preventDefault();
+        alert('🎉 สั่งซื้อสำเร็จ! ทางร้านได้รับออเดอร์ของคุณแล้วครับ (นี่คือข้อความจำลอง)');
+        
+        let currentCups = parseInt(document.getElementById('remaining-cups').innerText);
+        if(currentCups > 0) {
+            document.getElementById('remaining-cups').innerText = currentCups - 1;
+            let currentOrders = parseInt(document.getElementById('total-orders').innerText.replace(',', ''));
+            document.getElementById('total-orders').innerText = (currentOrders + 1).toLocaleString();
+        }
+
+        document.getElementById('order-form').reset();
+        goToHome();
+    }
+</script>
+
+</body>
+</html>
