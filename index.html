@@ -50,7 +50,7 @@
             ✅ มีสินค้าพร้อมรับออเดอร์
         </div>
 
-        <img src="image.jpag" alt="Greek Yogurt" style="width: 100%; border-radius: 10px; margin-bottom: 20px;">
+        <img src="image.jpg" alt="Greek Yogurt" style="width: 100%; border-radius: 10px; margin-bottom: 20px;">
 
         <button id="main-order-btn" class="btn-main" onclick="goToOrder()" disabled>กำลังโหลดสถานะร้าน...</button>
     </div>
@@ -131,13 +131,11 @@
 </div>
 
 <script>
-    // ==========================================
-    // 🔗 ลิงก์ Google Apps Script URL ของคุณ (ใช้ตัวล่าสุดนะ!)
-    // ==========================================
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbwuQJlTukEHMpBYg5Z8hVQYF4tU0qxSNrYM96Hkb2_ErQzbd1O4u80Zbvb90-OxYWs2cg/exec';
+    // 👇👇👇 เอา URL จาก Step 2 มาวางในเครื่องหมายคำพูดด้านล่างนี้นะครับ 👇👇👇
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbzyiRJS07kEjIXph8hTEBwYupKibmkF9Fe8ltVMhpwvsenxkiRBrAoufjyREc1QqFddow/exec';
 
     let isStockAvailable = true; 
-    let shopSchedule = {}; // เก็บข้อมูลตารางโควตาจาก Sheets
+    let shopSchedule = {}; 
 
     function initApp() {
         const loadingScreen = document.getElementById('loading-screen');
@@ -167,14 +165,13 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('❌ ไม่สามารถโหลดข้อมูลร้านค้าได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+            alert('❌ ไม่สามารถโหลดข้อมูลร้านค้าได้ กรุณาตรวจสอบลิงก์ Script URL');
             loadingScreen.innerHTML = '⚠️ เกิดข้อผิดพลาด';
         });
     }
 
     initApp();
 
-    // 🚀 [เพิ่มใหม่] ฟังก์ชันเช็คว่าวันที่เลือก มีโควตาเหลือไหม
     function updateDeliveryRounds() {
         const selectedDate = document.getElementById('delivery-date').value; 
         const qtyWanted = parseInt(document.getElementById('quantity').value) || 1;
@@ -190,20 +187,17 @@
 
         if (dayConfig) {
             if (dayConfig.isFull) {
-                // ถ้าโควตาเต็ม
                 roundSelect.innerHTML = '<option value="" disabled selected>❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)</option>';
                 submitBtn.disabled = true;
             } else if (dayConfig.quota > 0 && (dayConfig.booked + qtyWanted) > dayConfig.quota) {
-                // ถ้าสั่งเกินโควตาที่เหลือ
                 const remaining = dayConfig.quota - dayConfig.booked;
                 roundSelect.innerHTML = `<option value="" disabled selected>❌ วันนี้รับได้อีกแค่ ${remaining} ถ้วยค่ะ</option>`;
                 submitBtn.disabled = true;
             } else {
-                // ถ้าโควตาว่าง ให้โชว์รอบส่งที่เปิด
                 roundSelect.innerHTML = '<option value="" disabled selected>เลือกรอบเวลา...</option>';
                 let hasRound = false;
-                if (dayConfig.morning) { roundSelect.innerHTML += '<option value="morning">รอบเช้า (09:00)</option>'; hasRound = true; }
-                if (dayConfig.afternoon) { roundSelect.innerHTML += '<option value="afternoon">รอบบ่าย (13:00)</option>'; hasRound = true; }
+                if (dayConfig.morning) { roundSelect.innerHTML += '<option value="รอบเช้า (09:00)">รอบเช้า (09:00)</option>'; hasRound = true; }
+                if (dayConfig.afternoon) { roundSelect.innerHTML += '<option value="รอบบ่าย (13:00)">รอบบ่าย (13:00)</option>'; hasRound = true; }
 
                 if (!hasRound) {
                     roundSelect.innerHTML = '<option value="" disabled selected>❌ วันนี้ปิดรับออเดอร์ค่ะ</option>';
@@ -211,7 +205,6 @@
                 }
             }
         } else {
-            // ถ้าไม่เจอวันที่เลือกในตาราง Schedule
             roundSelect.innerHTML = '<option value="" disabled selected>❌ ยังไม่เปิดคิวสำหรับวันนี้ค่ะ</option>';
             submitBtn.disabled = true;
         }
@@ -223,6 +216,7 @@
         document.getElementById('order-page').classList.add('active');
         window.scrollTo(0, 0); calculatePrice(); 
     }
+    
     function goToHome() {
         document.getElementById('order-page').classList.remove('active');
         document.getElementById('home-page').classList.add('active');
@@ -233,6 +227,7 @@
     const toppingBoxes = document.querySelectorAll('.topping');
     function toggleAll() { toppingBoxes.forEach(box => box.checked = checkAllBox.checked); calculatePrice(); }
     function checkIndividual() { checkAllBox.checked = Array.from(toppingBoxes).every(box => box.checked); calculatePrice(); }
+    
     function calculatePrice() {
         let checkedCount = 0; toppingBoxes.forEach(box => { if(box.checked) checkedCount++; });
         let pricePerCup = (checkedCount === 3) ? 39 : (checkedCount === 2) ? 35 : 30;
@@ -266,7 +261,6 @@
         fetch(scriptUrl, { method: 'POST', body: JSON.stringify(orderData) })
         .then(response => {
             alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์แล้วค่ะ');
-            // รีโหลดเว็บให้โควตาอัปเดตแบบ Real-time
             location.reload(); 
         })
         .catch(error => {
