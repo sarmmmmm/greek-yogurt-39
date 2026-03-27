@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ร้านกรีกโยเกิร์ต 39 บาท</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --accent-color: #ffc107;
+            --text-color: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px; /* ขนาดพอดีกับหน้าจอมือถือ/ไอแพดแนวตั้ง */
+            min-height: 100vh;
+            background-color: var(--card-bg);
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- Page Sections --- */
+        .page {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Typography & Elements --- */
+        h1 { text-align: center; color: var(--primary-color); margin-bottom: 10px; font-size: 24px;}
+        .price-tag {
+            text-align: center;
+            background-color: var(--accent-color);
+            color: #000;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        /* --- Dashboard Stats --- */
+        .stats-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .stat-box {
+            flex: 1;
+            background-color: var(--bg-color);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #eee;
+        }
+        .stat-box h3 { font-size: 28px; color: var(--primary-color); }
+        .stat-box p { font-size: 14px; color: #666; }
+
+        /* --- Buttons --- */
+        .btn-main {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .btn-back {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* --- Form Elements --- */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 10px; }
+        
+        .checkbox-group {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #eee;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .checkbox-label input {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            accent-color: var(--primary-color);
+        }
+        .checkbox-label:last-child { margin-bottom: 0; }
+
+        input[type="date"], select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Prompt', sans-serif;
+        }
+        textarea { resize: none; height: 80px; }
+
+        .divider { height: 1px; background: #ddd; margin: 15px 0; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="home-page" class="page active">
+        <h1>🍯 ร้านกรีกโยเกิร์ตโฮมเมด</h1>
+        <div class="price-tag">
+            อร่อย จุใจ ให้เยอะ ในราคาเพียง 39 บาท!
+        </div>
+
+        <div class="stats-container">
+            <div class="stat-box">
+                <h3 id="total-orders">1,284</h3>
+                <p>ยอดสั่งซื้อทั้งหมด (คน)</p>
+            </div>
+            <div class="stat-box">
+                <h3 id="remaining-cups">15</h3>
+                <p>โควต้าลอตวันนี้ (ถ้วย)</p>
+            </div>
+        </div>
+
+        <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Greek Yogurt" style="width: 100%; border-radius: 10px; margin-bottom: 20px;">
+
+        <button class="btn-main" onclick="goToOrder()">สั่งโยเกิร์ตเลย 😋</button>
+    </div>
+
+    <div id="order-page" class="page">
+        <button class="btn-back" onclick="goToHome()">❮ กลับหน้าหลัก</button>
+        <h1>ฟอร์มสั่งซื้อสินค้า</h1>
+        
+        <form id="order-form" onsubmit="submitOrder(event)">
+            <div class="form-group">
+                <label>เลือกท็อปปิ้ง (กรีกโยเกิร์ต 39.-)</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="check-all" onchange="toggleAll()"> <b>ใส่ทุกอย่าง (แครกเกอร์, น้ำผึ้ง, กล้วย)</b>
+                    </label>
+                    <div class="divider"></div>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="topping" value="แครกเกอร์" onchange="checkIndividual()"> แครกเกอร์
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="topping" value="น้ำผึ้ง" onchange="checkIndividual()"> น้ำผึ้ง
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="topping" value="กล้วย" onchange="checkIndividual()"> กล้วย
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>วันที่ต้องการรับสินค้า</label>
+                <input type="date" required>
+            </div>
+
+            <div class="form-group">
+                <label>เลือกรอบส่ง (เปิด-ปิด ตามร้านกำหนด)</label>
+                <select required>
+                    <option value="" disabled selected>เลือกรอบเวลา...</option>
+                    <option value="morning">รอบเช้า (09:00 - 12:00)</option>
+                    <option value="afternoon">รอบบ่าย (13:00 - 16:00)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>สถานที่จัดส่ง / เบอร์ติดต่อ</label>
+                <textarea placeholder="กรอกที่อยู่จัดส่ง จุดสังเกต และเบอร์โทรศัพท์..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-main">ยืนยันการสั่งซื้อ</button>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    // --- ระบบเปลี่ยนหน้า ---
+    function goToOrder() {
+        document.getElementById('home-page').classList.remove('active');
+        document.getElementById('order-page').classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    function goToHome() {
+        document.getElementById('order-page').classList.remove('active');
+        document.getElementById('home-page').classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    // --- ระบบ Checkbox เลือก Topping ---
+    const checkAllBox = document.getElementById('check-all');
+    const toppingBoxes = document.querySelectorAll('.topping');
+
+    function toggleAll() {
+        const isChecked = checkAllBox.checked;
+        toppingBoxes.forEach(box => {
+            box.checked = isChecked;
+        });
+    }
+
+    function checkIndividual() {
+        // ถ้าเลือก Topping ครบทุกอัน ให้ปุ่ม "ใส่ทุกอย่าง" ติ๊กถูกอัตโนมัติ
+        const allChecked = Array.from(toppingBoxes).every(box => box.checked);
+        checkAllBox.checked = allChecked;
+    }
+
+    // --- ระบบส่งฟอร์ม (จำลอง) ---
+    function submitOrder(event) {
+        event.preventDefault(); // ป้องกันเว็บโหลดใหม่
+        alert('🎉 สั่งซื้อสำเร็จ! ทางร้านได้รับออเดอร์ของคุณแล้วครับ (นี่คือข้อความจำลอง)');
+        
+        // สมมติว่าสั่งเสร็จแล้ว ตัดสต็อกหน้าเว็บให้ดู
+        let currentCups = parseInt(document.getElementById('remaining-cups').innerText);
+        if(currentCups > 0) {
+            document.getElementById('remaining-cups').innerText = currentCups - 1;
+            let currentOrders = parseInt(document.getElementById('total-orders').innerText.replace(',', ''));
+            document.getElementById('total-orders').innerText = (currentOrders + 1).toLocaleString();
+        }
+
+        document.getElementById('order-form').reset(); // ล้างฟอร์ม
+        goToHome(); // กลับหน้าแรก
+    }
+</script>
+
+</body>
+</html>
