@@ -84,6 +84,16 @@
             border: 2px solid #ef5350;
         }
 
+        /* หน้าจอโหลดข้อมูล */
+        .loading-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 1000;
+            font-size: 18px; font-weight: 600; color: var(--primary-color);
+        }
+
         .btn-main {
             display: block;
             width: 100%;
@@ -166,8 +176,13 @@
 </head>
 <body>
 
+<div id="loading-screen" class="loading-screen">
+    <div style="font-size: 30px; margin-bottom: 10px;">⏳</div>
+    <div>กำลังโหลดข้อมูลสถานะร้าน...</div>
+</div>
+
 <div class="container">
-    <div id="home-page" class="page active">
+    <div id="home-page" class="page">
         <h1>🍯 ร้านกรีกโยเกิร์ตโฮมเมด</h1>
         <div class="price-tag">
             ราคาเพียง 39 บาท!
@@ -179,7 +194,7 @@
 
         <img src="image.jpag" alt="Greek Yogurt" style="width: 100%; border-radius: 10px; margin-bottom: 20px;">
 
-        <button id="main-order-btn" class="btn-main" onclick="goToOrder()">สั่งเลย 😋</button>
+        <button id="main-order-btn" class="btn-main" onclick="goToOrder()" disabled>กำลังโหลดสถานะร้าน...</button>
     </div>
 
     <div id="order-page" class="page">
@@ -190,17 +205,17 @@
             
             <div class="form-group">
                 <label>ชื่อลูกค้า (ชื่อเล่น / ชื่อที่แม่ค้าจำได้ 💖)</label>
-                <input type="text" id="customer-name" placeholder="เช่น สามstd, สามแฟนพี่ไอซ์.." required>
+                <input type="text" id="customer-name" placeholder="เช่น น้องเหมียวตึก 3, พี่สมชาย..." required>
             </div>
 
             <div class="form-group">
                 <label>ระดับความหนึบที่ชอบ</label>
                 <div class="checkbox-group">
                     <label class="checkbox-label">
-                        <input type="radio" name="texture" value="หนึบ" required checked> เนื้อแน่นกำลังดี (สามกดไลค์)
+                        <input type="radio" name="texture" value="หนึบ" required checked> เนื้อแน่นกำลังดี (สูตรมาตรฐานของร้าน)
                     </label>
                     <label class="checkbox-label">
-                        <input type="radio" name="texture" value="หนึบกว่า"> เนื้อครีมมี่เนียนนุ่ม (หนึบน้อยกว่าจิ้ดนึง)
+                        <input type="radio" name="texture" value="นุ่มละมุน"> เนื้อครีมมี่เนียนนุ่ม (ทานง่าย คล่องคอ)
                     </label>
                 </div>
             </div>
@@ -247,8 +262,8 @@
             </div>
 
             <div class="form-group">
-                <label>สถานที่จัดส่ง / ช่องทางการติดต่อ</label>
-                <textarea id="address" placeholder="ในมอ หลังมอ..." required></textarea>
+                <label>สถานที่จัดส่ง / เบอร์ติดต่อ</label>
+                <textarea id="address" placeholder="กรอกที่อยู่จัดส่ง จุดสังเกต และเบอร์โทรศัพท์..." required></textarea>
             </div>
 
             <button type="submit" id="submit-btn" class="btn-main">ยืนยันการสั่งซื้อ</button>
@@ -259,52 +274,75 @@
 
 <script>
     // ==========================================
-    // ⚙️ โซนตั้งค่าของแม่ค้า
+    // ⚙️ โซนตั้งค่าสำคัญ!
     // ==========================================
-    
-    // 1. ตั้งค่าสถานะสินค้า
-    const isStockAvailable = true; 
-
-    // 2. ตั้งค่ารอบส่ง
-    const shopDeliveryRounds = [
-        { value: "morning", text: "รอบเช้า (09:00)", isOpen: true },
-        { value: "afternoon", text: "รอบบ่าย (13:00)", isOpen: true }
-    ];
-
-    // 🔗 ลิงก์ Google Apps Script สำหรับส่งข้อมูลเข้า Sheets
+    // 🔗 ลิงก์ Google Apps Script URL ของคุณ
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbwuQJlTukEHMpBYg5Z8hVQYF4tU0qxSNrYM96Hkb2_ErQzbd1O4u80Zbvb90-OxYWs2cg/exec';
 
+    // ตัวแปรเก็บสถานะ (จะถูกโหลดมาจาก Sheets)
+    let isStockAvailable = true; 
+    let shopDeliveryRounds = [];
+
     // ==========================================
-    // ระบบโหลดข้อมูลเริ่มต้น
+    // 🔄 ระบบโหลดข้อมูลแบบเรียลไทม์จาก Google Sheets
     // ==========================================
     function initApp() {
+        const loadingScreen = document.getElementById('loading-screen');
+        const homePage = document.getElementById('home-page');
         const statusBox = document.getElementById('stock-status');
         const mainOrderBtn = document.getElementById('main-order-btn');
 
-        if (!isStockAvailable) {
-            statusBox.className = 'status-badge sold-out';
-            statusBox.innerHTML = '❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)';
-            mainOrderBtn.disabled = true;
-            mainOrderBtn.innerText = 'ปิดรับออเดอร์';
-        }
+        // 1. วิ่งไปถาม Google Sheets ว่าวันนี้ร้านเป็นไงบ้าง
+        fetch(scriptUrl)
+        .then(response => response.json())
+        .then(config => {
+            // ดึงค่ามาเก็บไว้
+            isStockAvailable = config.isStockAvailable;
+            shopDeliveryRounds = [
+                { value: "morning", text: "รอบเช้า (09:00)", isOpen: config.morningRound },
+                { value: "afternoon", text: "รอบบ่าย (13:00)", isOpen: config.afternoonRound }
+            ];
 
-        const selectBox = document.getElementById('delivery-round');
-        shopDeliveryRounds.forEach(round => {
-            if (round.isOpen) {
-                const option = document.createElement('option');
-                option.value = round.value;
-                option.innerText = round.text;
-                selectBox.appendChild(option);
+            // 2. จัดการหน้าแรกตามสถานะสินค้า
+            if (!isStockAvailable) {
+                statusBox.className = 'status-badge sold-out';
+                statusBox.innerHTML = '❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)';
+                mainOrderBtn.innerText = 'ปิดรับออเดอร์';
+            } else {
+                statusBox.className = 'status-badge available';
+                statusBox.innerHTML = '✅ มีสินค้าพร้อมรับออเดอร์';
+                mainOrderBtn.innerText = 'สั่งเลย 😋';
+                mainOrderBtn.disabled = false; // เปิดปุ่มสั่งซื้อ
             }
+
+            // 3. จัดการรอบส่งในหน้าฟอร์ม
+            const selectBox = document.getElementById('delivery-round');
+            shopDeliveryRounds.forEach(round => {
+                if (round.isOpen) {
+                    const option = document.createElement('option');
+                    option.value = round.value;
+                    option.innerText = round.text;
+                    selectBox.appendChild(option);
+                }
+            });
+
+            // ปิดหน้าจอโหลด และเปิดหน้าแรกของร้าน
+            loadingScreen.style.display = 'none';
+            homePage.classList.add('active');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ ไม่สามารถโหลดข้อมูลร้านค้าได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต');
+            loadingScreen.innerHTML = '⚠️ เกิดข้อผิดพลาด';
         });
     }
 
+    // เรียกใช้งานทันทีที่โหลดหน้าเว็บ
     initApp();
 
     // ==========================================
-    // ฟังก์ชันการทำงานต่างๆ ของหน้าฟอร์ม
+    // ฟังก์ชันการทำงานของฟอร์ม (เหมือนเดิม)
     // ==========================================
-
     function goToOrder() {
         if (!isStockAvailable) return;
         document.getElementById('home-page').classList.remove('active');
@@ -312,74 +350,43 @@
         window.scrollTo(0, 0);
         calculatePrice(); 
     }
-
     function goToHome() {
         document.getElementById('order-page').classList.remove('active');
         document.getElementById('home-page').classList.add('active');
         window.scrollTo(0, 0);
     }
-
     const checkAllBox = document.getElementById('check-all');
     const toppingBoxes = document.querySelectorAll('.topping');
-
     function toggleAll() {
-        const isChecked = checkAllBox.checked;
-        toppingBoxes.forEach(box => {
-            box.checked = isChecked;
-        });
+        toppingBoxes.forEach(box => box.checked = checkAllBox.checked);
         calculatePrice();
     }
-
     function checkIndividual() {
-        const allChecked = Array.from(toppingBoxes).every(box => box.checked);
-        checkAllBox.checked = allChecked;
+        checkAllBox.checked = Array.from(toppingBoxes).every(box => box.checked);
         calculatePrice();
     }
-
     function calculatePrice() {
         let checkedCount = 0;
-        toppingBoxes.forEach(box => {
-            if(box.checked) checkedCount++;
-        });
-
-        let pricePerCup = 30; 
-        if (checkedCount === 3) {
-            pricePerCup = 39;
-        } else if (checkedCount === 2) {
-            pricePerCup = 35;
-        }
-
+        toppingBoxes.forEach(box => { if(box.checked) checkedCount++; });
+        let pricePerCup = (checkedCount === 3) ? 39 : (checkedCount === 2) ? 35 : 30;
         let quantity = parseInt(document.getElementById('quantity').value);
-        if (isNaN(quantity) || quantity < 1) {
-            quantity = 1; 
-        }
-
-        let totalPrice = pricePerCup * quantity;
-        document.getElementById('total-price-display').innerText = totalPrice;
+        if (isNaN(quantity) || quantity < 1) quantity = 1; 
+        document.getElementById('total-price-display').innerText = pricePerCup * quantity;
     }
 
-    // ==========================================
-    // 🚀 ฟังก์ชันส่งข้อมูลเข้า Google Sheets
-    // ==========================================
+    // ฟังก์ชันส่งข้อมูลเข้า Google Sheets และส่ง LINE
     function submitOrder(event) {
-        event.preventDefault(); // ป้องกันไม่ให้หน้าเว็บรีเฟรช
-
+        event.preventDefault();
         const submitBtn = document.getElementById('submit-btn');
         submitBtn.innerText = '⏳ กำลังส่งออเดอร์...';
         submitBtn.disabled = true;
 
-        // ดึงข้อมูลท็อปปิ้งที่เลือก
         let selectedToppings = [];
-        toppingBoxes.forEach(box => {
-            if(box.checked) selectedToppings.push(box.value);
-        });
-        let toppingsText = selectedToppings.length > 0 ? selectedToppings.join(', ') : 'ไม่ใส่ท็อปปิ้ง';
-
-        // ดึงข้อความรอบส่ง
+        toppingBoxes.forEach(box => { if(box.checked) selectedToppings.push(box.value); });
+        let toppingsText = (selectedToppings.length > 0) ? selectedToppings.join(', ') : 'ไม่ใส่ท็อปปิ้ง';
         let roundSelect = document.getElementById('delivery-round');
         let roundText = roundSelect.options[roundSelect.selectedIndex].text;
 
-        // จัดเตรียมข้อมูลเป็น JSON
         const orderData = {
             customerName: document.getElementById('customer-name').value,
             texture: document.querySelector('input[name="texture"]:checked').value,
@@ -391,28 +398,18 @@
             address: document.getElementById('address').value
         };
 
-        // ยิงข้อมูลไปที่ Google Sheets
-        fetch(scriptUrl, {
-            method: 'POST',
-            body: JSON.stringify(orderData)
-        })
+        fetch(scriptUrl, { method: 'POST', body: JSON.stringify(orderData) })
         .then(response => {
-            alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์เรียบร้อยแล้วค่ะ');
-            
-            // รีเซ็ตฟอร์มให้กลับเป็นเหมือนเดิม
+            alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์แล้วค่ะ');
             document.getElementById('order-form').reset();
-            checkAllBox.checked = true;
-            toggleAll();
-            submitBtn.innerText = 'ยืนยันการสั่งซื้อ';
-            submitBtn.disabled = false;
-            
-            goToHome(); // เด้งกลับหน้าแรก
+            checkAllBox.checked = true; toggleAll();
+            submitBtn.innerText = 'ยืนยันการสั่งซื้อ'; submitBtn.disabled = false;
+            goToHome();
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('❌ เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้งค่ะ');
-            submitBtn.innerText = 'ยืนยันการสั่งซื้อ';
-            submitBtn.disabled = false;
+            alert('❌ มีข้อผิดพลาด! กรุณาลองใหม่อีกครั้ง');
+            submitBtn.innerText = 'ยืนยันการสั่งซื้อ'; submitBtn.disabled = false;
         });
     }
 </script>
