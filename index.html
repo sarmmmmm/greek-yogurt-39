@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ร้านกรีกโยเกิร์ต 39 บาท</title>
-    <img src="image.jpag"
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #0056b3;
@@ -30,7 +30,7 @@
 
         .container {
             width: 100%;
-            max-width: 500px; /* ขนาดพอดีกับหน้าจอมือถือ/ไอแพดแนวตั้ง */
+            max-width: 500px;
             min-height: 100vh;
             background-color: var(--card-bg);
             box-shadow: 0 0 15px rgba(0,0,0,0.1);
@@ -38,7 +38,6 @@
             overflow: hidden;
         }
 
-        /* --- Page Sections --- */
         .page {
             display: none;
             padding: 20px;
@@ -53,7 +52,6 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Typography & Elements --- */
         h1 { text-align: center; color: var(--primary-color); margin-bottom: 10px; font-size: 24px;}
         .price-tag {
             text-align: center;
@@ -66,7 +64,6 @@
             margin-bottom: 20px;
         }
         
-        /* --- Dashboard Stats --- */
         .stats-container {
             display: flex;
             gap: 10px;
@@ -83,7 +80,6 @@
         .stat-box h3 { font-size: 28px; color: var(--primary-color); }
         .stat-box p { font-size: 14px; color: #666; }
 
-        /* --- Buttons --- */
         .btn-main {
             display: block;
             width: 100%;
@@ -109,7 +105,6 @@
             align-items: center;
         }
 
-        /* --- Form Elements --- */
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 10px; }
         
@@ -145,13 +140,11 @@
         textarea { resize: none; height: 80px; }
 
         .divider { height: 1px; background: #ddd; margin: 15px 0; }
-
     </style>
 </head>
 <body>
 
 <div class="container">
-    
     <div id="home-page" class="page active">
         <h1>🍯 ร้านกรีกโยเกิร์ตโฮมเมด</h1>
         <div class="price-tag">
@@ -169,7 +162,7 @@
             </div>
         </div>
 
-        <img src="https://images.unsplash.com/photo-1488477181946-6428a0291777?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Greek Yogurt" style="width: 100%; border-radius: 10px; margin-bottom: 20px;">
+        <img src="image.jpag" alt="Greek Yogurt" style="width: 100%; border-radius: 10px; margin-bottom: 20px;">
 
         <button class="btn-main" onclick="goToOrder()">สั่งโยเกิร์ตเลย 😋</button>
     </div>
@@ -224,7 +217,6 @@
 </div>
 
 <script>
-    // --- ระบบเปลี่ยนหน้า ---
     function goToOrder() {
         document.getElementById('home-page').classList.remove('active');
         document.getElementById('order-page').classList.add('active');
@@ -237,7 +229,6 @@
         window.scrollTo(0, 0);
     }
 
-    // --- ระบบ Checkbox เลือก Topping ---
     const checkAllBox = document.getElementById('check-all');
     const toppingBoxes = document.querySelectorAll('.topping');
 
@@ -249,28 +240,4 @@
     }
 
     function checkIndividual() {
-        // ถ้าเลือก Topping ครบทุกอัน ให้ปุ่ม "ใส่ทุกอย่าง" ติ๊กถูกอัตโนมัติ
         const allChecked = Array.from(toppingBoxes).every(box => box.checked);
-        checkAllBox.checked = allChecked;
-    }
-
-    // --- ระบบส่งฟอร์ม (จำลอง) ---
-    function submitOrder(event) {
-        event.preventDefault(); // ป้องกันเว็บโหลดใหม่
-        alert('🎉 สั่งซื้อสำเร็จ! ทางร้านได้รับออเดอร์ของคุณแล้วครับ (นี่คือข้อความจำลอง)');
-        
-        // สมมติว่าสั่งเสร็จแล้ว ตัดสต็อกหน้าเว็บให้ดู
-        let currentCups = parseInt(document.getElementById('remaining-cups').innerText);
-        if(currentCups > 0) {
-            document.getElementById('remaining-cups').innerText = currentCups - 1;
-            let currentOrders = parseInt(document.getElementById('total-orders').innerText.replace(',', ''));
-            document.getElementById('total-orders').innerText = (currentOrders + 1).toLocaleString();
-        }
-
-        document.getElementById('order-form').reset(); // ล้างฟอร์ม
-        goToHome(); // กลับหน้าแรก
-    }
-</script>
-
-</body>
-</html>
