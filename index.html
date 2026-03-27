@@ -6,172 +6,32 @@
     <title>ร้านกรีกโยเกิร์ต 39 บาท</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #0056b3;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --accent-color: #ffc107;
-            --text-color: #333;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Prompt', sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 500px;
-            min-height: 100vh;
-            background-color: var(--card-bg);
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .page {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-        .page.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        :root { --primary-color: #0056b3; --bg-color: #f8f9fa; --card-bg: #ffffff; --accent-color: #ffc107; --text-color: #333; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; min-height: 100vh; background-color: var(--card-bg); box-shadow: 0 0 15px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+        .page { display: none; padding: 20px; animation: fadeIn 0.3s ease-in-out; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         h1 { text-align: center; color: var(--primary-color); margin-bottom: 10px; font-size: 24px;}
-        
-        .price-tag {
-            text-align: center;
-            background-color: var(--accent-color);
-            color: #000;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        
-        .status-badge {
-            text-align: center;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        .status-badge.available {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border: 2px solid #4caf50;
-        }
-        .status-badge.sold-out {
-            background-color: #ffebee;
-            color: #c62828;
-            border: 2px solid #ef5350;
-        }
-
-        /* หน้าจอโหลดข้อมูล */
-        .loading-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 255, 255, 0.9);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 1000;
-            font-size: 18px; font-weight: 600; color: var(--primary-color);
-        }
-
-        .btn-main {
-            display: block;
-            width: 100%;
-            padding: 15px;
-            background-color: var(--primary-color);
-            color: white;
-            text-align: center;
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: 0.3s;
-        }
-        .btn-main:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        
-        .btn-back {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-
+        .price-tag { text-align: center; background-color: var(--accent-color); color: #000; padding: 10px; border-radius: 10px; font-size: 20px; font-weight: 700; margin-bottom: 20px; }
+        .status-badge { text-align: center; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+        .status-badge.available { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #4caf50; }
+        .status-badge.sold-out { background-color: #ffebee; color: #c62828; border: 2px solid #ef5350; }
+        .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; font-size: 18px; font-weight: 600; color: var(--primary-color); }
+        .btn-main { display: block; width: 100%; padding: 15px; background-color: var(--primary-color); color: white; text-align: center; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-main:disabled { background-color: #cccccc; cursor: not-allowed; }
+        .btn-back { background: none; border: none; color: var(--primary-color); font-size: 16px; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 10px; }
-        
-        .checkbox-group {
-            background: var(--bg-color);
-            padding: 15px;
-            border-radius: 10px;
-            border: 1px solid #eee;
-        }
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .checkbox-label input {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
-            accent-color: var(--primary-color);
-        }
+        .checkbox-group { background: var(--bg-color); padding: 15px; border-radius: 10px; border: 1px solid #eee; }
+        .checkbox-label { display: flex; align-items: center; margin-bottom: 10px; font-size: 16px; cursor: pointer; }
+        .checkbox-label input { width: 20px; height: 20px; margin-right: 10px; accent-color: var(--primary-color); }
         .checkbox-label:last-child { margin-bottom: 0; }
-
-        input[type="text"], input[type="date"], input[type="number"], select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            font-family: 'Prompt', sans-serif;
-        }
+        input[type="text"], input[type="date"], input[type="number"], select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; font-family: 'Prompt', sans-serif; }
         textarea { resize: none; height: 80px; }
-
         .divider { height: 1px; background: #ddd; margin: 15px 0; }
-        
-        .total-price-box {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            border: 2px dashed #4caf50;
-        }
+        .total-price-box { background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 10px; text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 20px; border: 2px dashed #4caf50; }
     </style>
 </head>
 <body>
@@ -184,9 +44,7 @@
 <div class="container">
     <div id="home-page" class="page">
         <h1>🍯 ร้านกรีกโยเกิร์ตโฮมเมด</h1>
-        <div class="price-tag">
-            ราคาเพียง 39 บาท!
-        </div>
+        <div class="price-tag">ราคาเพียง 39 บาท!</div>
 
         <div id="stock-status" class="status-badge available">
             ✅ มีสินค้าพร้อมรับออเดอร์
@@ -242,7 +100,7 @@
 
             <div class="form-group">
                 <label>จำนวนที่ต้องการสั่ง (ถ้วย)</label>
-                <input type="number" id="quantity" value="1" min="1" oninput="calculatePrice()" required>
+                <input type="number" id="quantity" value="1" min="1" oninput="calculatePrice(); updateDeliveryRounds();" required>
             </div>
 
             <div class="total-price-box">
@@ -251,13 +109,13 @@
 
             <div class="form-group">
                 <label>วันที่ต้องการรับสินค้า</label>
-                <input type="date" id="delivery-date" required>
+                <input type="date" id="delivery-date" onchange="updateDeliveryRounds()" required>
             </div>
 
             <div class="form-group">
                 <label>เลือกรอบส่ง (เปิด-ปิด ตามที่แม่ค้ากำหนด)</label>
                 <select id="delivery-round" required>
-                    <option value="" disabled selected>เลือกรอบเวลา...</option>
+                    <option value="" disabled selected>กรุณาเลือกวันที่ก่อนค่ะ...</option>
                 </select>
             </div>
 
@@ -274,36 +132,25 @@
 
 <script>
     // ==========================================
-    // ⚙️ โซนตั้งค่าสำคัญ!
+    // 🔗 ลิงก์ Google Apps Script URL ของคุณ (ใช้ตัวล่าสุดนะ!)
     // ==========================================
-    // 🔗 ลิงก์ Google Apps Script URL ของคุณ
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbwuQJlTukEHMpBYg5Z8hVQYF4tU0qxSNrYM96Hkb2_ErQzbd1O4u80Zbvb90-OxYWs2cg/exec';
 
-    // ตัวแปรเก็บสถานะ (จะถูกโหลดมาจาก Sheets)
     let isStockAvailable = true; 
-    let shopDeliveryRounds = [];
+    let shopSchedule = {}; // เก็บข้อมูลตารางโควตาจาก Sheets
 
-    // ==========================================
-    // 🔄 ระบบโหลดข้อมูลแบบเรียลไทม์จาก Google Sheets
-    // ==========================================
     function initApp() {
         const loadingScreen = document.getElementById('loading-screen');
         const homePage = document.getElementById('home-page');
         const statusBox = document.getElementById('stock-status');
         const mainOrderBtn = document.getElementById('main-order-btn');
 
-        // 1. วิ่งไปถาม Google Sheets ว่าวันนี้ร้านเป็นไงบ้าง
         fetch(scriptUrl)
         .then(response => response.json())
         .then(config => {
-            // ดึงค่ามาเก็บไว้
             isStockAvailable = config.isStockAvailable;
-            shopDeliveryRounds = [
-                { value: "morning", text: "รอบเช้า (09:00)", isOpen: config.morningRound },
-                { value: "afternoon", text: "รอบบ่าย (13:00)", isOpen: config.afternoonRound }
-            ];
+            shopSchedule = config.schedule; 
 
-            // 2. จัดการหน้าแรกตามสถานะสินค้า
             if (!isStockAvailable) {
                 statusBox.className = 'status-badge sold-out';
                 statusBox.innerHTML = '❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)';
@@ -312,21 +159,9 @@
                 statusBox.className = 'status-badge available';
                 statusBox.innerHTML = '✅ มีสินค้าพร้อมรับออเดอร์';
                 mainOrderBtn.innerText = 'สั่งเลย 😋';
-                mainOrderBtn.disabled = false; // เปิดปุ่มสั่งซื้อ
+                mainOrderBtn.disabled = false; 
             }
 
-            // 3. จัดการรอบส่งในหน้าฟอร์ม
-            const selectBox = document.getElementById('delivery-round');
-            shopDeliveryRounds.forEach(round => {
-                if (round.isOpen) {
-                    const option = document.createElement('option');
-                    option.value = round.value;
-                    option.innerText = round.text;
-                    selectBox.appendChild(option);
-                }
-            });
-
-            // ปิดหน้าจอโหลด และเปิดหน้าแรกของร้าน
             loadingScreen.style.display = 'none';
             homePage.classList.add('active');
         })
@@ -337,49 +172,79 @@
         });
     }
 
-    // เรียกใช้งานทันทีที่โหลดหน้าเว็บ
     initApp();
 
-    // ==========================================
-    // ฟังก์ชันการทำงานของฟอร์ม (เหมือนเดิม)
-    // ==========================================
+    // 🚀 [เพิ่มใหม่] ฟังก์ชันเช็คว่าวันที่เลือก มีโควตาเหลือไหม
+    function updateDeliveryRounds() {
+        const selectedDate = document.getElementById('delivery-date').value; 
+        const qtyWanted = parseInt(document.getElementById('quantity').value) || 1;
+        const roundSelect = document.getElementById('delivery-round');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        roundSelect.innerHTML = '<option value="" disabled selected>กำลังเช็คโควตา...</option>';
+        submitBtn.disabled = false;
+
+        if (!selectedDate) return;
+
+        const dayConfig = shopSchedule[selectedDate];
+
+        if (dayConfig) {
+            if (dayConfig.isFull) {
+                // ถ้าโควตาเต็ม
+                roundSelect.innerHTML = '<option value="" disabled selected>❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)</option>';
+                submitBtn.disabled = true;
+            } else if (dayConfig.quota > 0 && (dayConfig.booked + qtyWanted) > dayConfig.quota) {
+                // ถ้าสั่งเกินโควตาที่เหลือ
+                const remaining = dayConfig.quota - dayConfig.booked;
+                roundSelect.innerHTML = `<option value="" disabled selected>❌ วันนี้รับได้อีกแค่ ${remaining} ถ้วยค่ะ</option>`;
+                submitBtn.disabled = true;
+            } else {
+                // ถ้าโควตาว่าง ให้โชว์รอบส่งที่เปิด
+                roundSelect.innerHTML = '<option value="" disabled selected>เลือกรอบเวลา...</option>';
+                let hasRound = false;
+                if (dayConfig.morning) { roundSelect.innerHTML += '<option value="morning">รอบเช้า (09:00)</option>'; hasRound = true; }
+                if (dayConfig.afternoon) { roundSelect.innerHTML += '<option value="afternoon">รอบบ่าย (13:00)</option>'; hasRound = true; }
+
+                if (!hasRound) {
+                    roundSelect.innerHTML = '<option value="" disabled selected>❌ วันนี้ปิดรับออเดอร์ค่ะ</option>';
+                    submitBtn.disabled = true;
+                }
+            }
+        } else {
+            // ถ้าไม่เจอวันที่เลือกในตาราง Schedule
+            roundSelect.innerHTML = '<option value="" disabled selected>❌ ยังไม่เปิดคิวสำหรับวันนี้ค่ะ</option>';
+            submitBtn.disabled = true;
+        }
+    }
+
     function goToOrder() {
         if (!isStockAvailable) return;
         document.getElementById('home-page').classList.remove('active');
         document.getElementById('order-page').classList.add('active');
-        window.scrollTo(0, 0);
-        calculatePrice(); 
+        window.scrollTo(0, 0); calculatePrice(); 
     }
     function goToHome() {
         document.getElementById('order-page').classList.remove('active');
         document.getElementById('home-page').classList.add('active');
         window.scrollTo(0, 0);
     }
+    
     const checkAllBox = document.getElementById('check-all');
     const toppingBoxes = document.querySelectorAll('.topping');
-    function toggleAll() {
-        toppingBoxes.forEach(box => box.checked = checkAllBox.checked);
-        calculatePrice();
-    }
-    function checkIndividual() {
-        checkAllBox.checked = Array.from(toppingBoxes).every(box => box.checked);
-        calculatePrice();
-    }
+    function toggleAll() { toppingBoxes.forEach(box => box.checked = checkAllBox.checked); calculatePrice(); }
+    function checkIndividual() { checkAllBox.checked = Array.from(toppingBoxes).every(box => box.checked); calculatePrice(); }
     function calculatePrice() {
-        let checkedCount = 0;
-        toppingBoxes.forEach(box => { if(box.checked) checkedCount++; });
+        let checkedCount = 0; toppingBoxes.forEach(box => { if(box.checked) checkedCount++; });
         let pricePerCup = (checkedCount === 3) ? 39 : (checkedCount === 2) ? 35 : 30;
         let quantity = parseInt(document.getElementById('quantity').value);
         if (isNaN(quantity) || quantity < 1) quantity = 1; 
         document.getElementById('total-price-display').innerText = pricePerCup * quantity;
     }
 
-    // ฟังก์ชันส่งข้อมูลเข้า Google Sheets และส่ง LINE
     function submitOrder(event) {
         event.preventDefault();
         const submitBtn = document.getElementById('submit-btn');
-        submitBtn.innerText = '⏳ กำลังส่งออเดอร์...';
-        submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ กำลังส่งออเดอร์...'; submitBtn.disabled = true;
 
         let selectedToppings = [];
         toppingBoxes.forEach(box => { if(box.checked) selectedToppings.push(box.value); });
@@ -401,10 +266,8 @@
         fetch(scriptUrl, { method: 'POST', body: JSON.stringify(orderData) })
         .then(response => {
             alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์แล้วค่ะ');
-            document.getElementById('order-form').reset();
-            checkAllBox.checked = true; toggleAll();
-            submitBtn.innerText = 'ยืนยันการสั่งซื้อ'; submitBtn.disabled = false;
-            goToHome();
+            // รีโหลดเว็บให้โควตาอัปเดตแบบ Real-time
+            location.reload(); 
         })
         .catch(error => {
             console.error('Error:', error);
