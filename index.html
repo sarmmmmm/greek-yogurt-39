@@ -13,21 +13,28 @@
         .page { display: none; padding: 20px; animation: fadeIn 0.3s ease-in-out; }
         .page.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* สไตล์สำหรับโลโก้และการจัดแต่งรูป */
+        .logo-container { text-align: center; margin: 10px 0; }
+        .logo-img { max-width: 120px; height: auto; border-radius: 50%; }
         h1 { text-align: center; color: var(--primary-color); margin-bottom: 10px; font-size: 24px;}
+        
         .price-tag { text-align: center; background-color: var(--accent-color); color: #000; padding: 10px; border-radius: 10px; font-size: 20px; font-weight: 700; margin-bottom: 20px; }
         .status-badge { text-align: center; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: 600; margin-bottom: 20px; }
         .status-badge.available { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #4caf50; }
         .status-badge.sold-out { background-color: #ffebee; color: #c62828; border: 2px solid #ef5350; }
+        
         .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255, 255, 255, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; font-size: 18px; font-weight: 600; color: var(--primary-color); }
         .btn-main { display: block; width: 100%; padding: 15px; background-color: var(--primary-color); color: white; text-align: center; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: 0.3s; }
         .btn-main:disabled { background-color: #cccccc; cursor: not-allowed; }
         .btn-back { background: none; border: none; color: var(--primary-color); font-size: 16px; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; }
+        
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 10px; }
         .checkbox-group { background: var(--bg-color); padding: 15px; border-radius: 10px; border: 1px solid #eee; }
         .checkbox-label { display: flex; align-items: center; margin-bottom: 10px; font-size: 16px; cursor: pointer; }
         .checkbox-label input { width: 20px; height: 20px; margin-right: 10px; accent-color: var(--primary-color); }
-        .checkbox-label:last-child { margin-bottom: 0; }
+        
         input[type="text"], input[type="date"], input[type="number"], select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; font-family: 'Prompt', sans-serif; }
         textarea { resize: none; height: 80px; }
         .divider { height: 1px; background: #ddd; margin: 15px 0; }
@@ -43,6 +50,10 @@
 
 <div class="container">
     <div id="home-page" class="page">
+        <div class="logo-container">
+            <img src="logo.png" alt="Logo" class="logo-img">
+        </div>
+
         <h1>🍯 ร้านกรีกโยเกิร์ตโฮมเมด</h1>
         <div class="price-tag">ราคาเพียง 39 บาท!</div>
 
@@ -50,7 +61,7 @@
             ✅ มีสินค้าพร้อมรับออเดอร์
         </div>
 
-        <img src="image.jpg" alt="Greek Yogurt" style="width: 100%; border-radius: 10px; margin-bottom: 20px;">
+        <img src="product.jpg" alt="Greek Yogurt" style="width: 100%; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
 
         <button id="main-order-btn" class="btn-main" onclick="goToOrder()" disabled>กำลังโหลดสถานะร้าน...</button>
     </div>
@@ -127,11 +138,9 @@
             <button type="submit" id="submit-btn" class="btn-main">ยืนยันการสั่งซื้อ</button>
         </form>
     </div>
-
 </div>
 
 <script>
-    // 👇👇👇 เอา URL จาก Step 2 มาวางในเครื่องหมายคำพูดด้านล่างนี้นะครับ 👇👇👇
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbzyiRJS07kEjIXph8hTEBwYupKibmkF9Fe8ltVMhpwvsenxkiRBrAoufjyREc1QqFddow/exec';
 
     let isStockAvailable = true; 
@@ -165,7 +174,7 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('❌ ไม่สามารถโหลดข้อมูลร้านค้าได้ กรุณาตรวจสอบลิงก์ Script URL');
+            alert('❌ ไม่สามารถโหลดข้อมูลร้านค้าได้');
             loadingScreen.innerHTML = '⚠️ เกิดข้อผิดพลาด';
         });
     }
@@ -187,11 +196,11 @@
 
         if (dayConfig) {
             if (dayConfig.isFull) {
-                roundSelect.innerHTML = '<option value="" disabled selected>❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)</option>';
+                roundSelect.innerHTML = '<option value="" disabled selected>❌ สินค้าหมดชั่วคราว</option>';
                 submitBtn.disabled = true;
             } else if (dayConfig.quota > 0 && (dayConfig.booked + qtyWanted) > dayConfig.quota) {
                 const remaining = dayConfig.quota - dayConfig.booked;
-                roundSelect.innerHTML = `<option value="" disabled selected>❌ วันนี้รับได้อีกแค่ ${remaining} ถ้วยค่ะ</option>`;
+                roundSelect.innerHTML = `<option value="" disabled selected>❌ รับได้อีกแค่ ${remaining} ถ้วยค่ะ</option>`;
                 submitBtn.disabled = true;
             } else {
                 roundSelect.innerHTML = '<option value="" disabled selected>เลือกรอบเวลา...</option>';
