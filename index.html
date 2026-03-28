@@ -194,11 +194,11 @@
     let isStockAvailable = true; 
     let shopSchedule = {}; 
 
-    function initApp() {
+   function initApp() {
         const loadingScreen = document.getElementById('loading-screen');
         const homePage = document.getElementById('home-page');
-        const statusBox = document.getElementById('stock-status');
-        const mainOrderBtn = document.getElementById('main-order-btn');
+        const statusBox = document.getElementById('stock-status'); // จุดที่แสดงแถบเขียว/แดง
+        const mainOrderBtn = document.getElementById('main-order-btn'); // จุดที่เป็นปุ่มกดสั่ง
 
         fetch(scriptUrl)
         .then(response => response.json())
@@ -206,20 +206,29 @@
             isStockAvailable = config.isStockAvailable;
             shopSchedule = config.schedule; 
 
+            // --- ส่วนที่ควบคุมการแสดงผลหน้า Home ---
             if (!isStockAvailable) {
+                // 1. เปลี่ยนแถบสถานะเป็นสีแดงและแจ้งว่าหมด
                 statusBox.className = 'status-badge sold-out';
                 statusBox.innerHTML = '❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)';
-                mainOrderBtn.innerText = 'ปิดรับออเดอร์';
+                
+                // 2. เปลี่ยนข้อความที่ปุ่ม และทำให้กดไม่ได้ (Disabled)
+                mainOrderBtn.innerText = 'ปิดรับออเดอร์ชั่วคราว';
+                mainOrderBtn.disabled = true; 
+                mainOrderBtn.style.backgroundColor = '#cccccc'; // เปลี่ยนสีปุ่มเป็นสีเทา
             } else {
+                // กรณีมีของปกติ
                 statusBox.className = 'status-badge available';
                 statusBox.innerHTML = '✅ มีสินค้าพร้อมรับออเดอร์';
                 mainOrderBtn.innerText = 'สั่งเลย 😋';
                 mainOrderBtn.disabled = false; 
             }
+            // ---------------------------------------
 
             loadingScreen.style.display = 'none';
             homePage.classList.add('active');
         })
+        // ... ส่วนที่เหลือห้ามเปลี่ยน ...
         .catch(error => {
             console.error('Error:', error);
             alert('❌ ไม่สามารถโหลดข้อมูลร้านค้าได้');
