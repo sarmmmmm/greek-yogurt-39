@@ -134,20 +134,29 @@
             <div class="form-group">
                 <label>ระดับความหนึบที่ชอบ</label>
                 <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="radio" name="texture" value="หนึบ" checked> เนื้อแน่นกำลังดี</label>
-                    <label class="checkbox-label"><input type="radio" name="texture" value="นุ่มละมุน"> เนื้อครีมมี่เนียนนุ่ม</label>
+                    <label class="checkbox-label"><input type="radio" name="texture" value="หนึบ" checked> เนื้อแน่นกำลังดี (สูตรมาตรฐานของร้าน)</label>
+                    <label class="checkbox-label"><input type="radio" name="texture" value="นุ่มละมุน"> เนื้อหนึบ เนียนนุ่ม (ทานง่าย คล่องคอ)</label>
                 </div>
             </div>
 
-            <div class="form-group">
+           <div class="form-group">
                 <label>เลือกท็อปปิ้ง (สูงสุด 3 อย่าง)</label>
                 <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="checkbox" id="check-all" onchange="toggleAll()" checked> <b>ใส่ทุกอย่าง (39 บาท)</b></label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="check-all" onchange="toggleAll()" checked> <b>ใส่ทุกอย่าง (39 บาท)</b>
+                    </label>
                     <div class="divider"></div>
-                    <label class="checkbox-label"><input type="checkbox" class="topping" value="แครกเกอร์" onchange="checkIndividual()" checked> แครกเกอร์</label>
-                    <label class="checkbox-label"><input type="checkbox" class="topping" value="น้ำผึ้ง" onchange="checkIndividual()" checked> น้ำผึ้ง</label>
-                    <label class="checkbox-label"><input type="checkbox" class="topping" value="กล้วย" onchange="checkIndividual()" checked> กล้วย</label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="topping" value="แครกเกอร์" onchange="checkIndividual()" checked> แครกเกอร์
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="topping" value="น้ำผึ้ง" onchange="checkIndividual()" checked> น้ำผึ้ง
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" class="topping" value="กล้วย" onchange="checkIndividual()" checked> กล้วย
+                    </label>
                 </div>
+                <small style="color: #666; margin-top: 5px; display: block;">* เลือก 2 อย่าง 35.- / เลือก 1 อย่างหรือไม่ใส่เลย 30.-</small>
             </div>
 
             <div class="form-group">
@@ -170,8 +179,8 @@
             </div>
 
             <div class="form-group">
-                <label>สถานที่จัดส่ง / เบอร์ติดต่อ</label>
-                <textarea id="address" placeholder="กรอกที่อยู่และเบอร์โทร..." required></textarea>
+                <label>สถานที่จัดส่ง / ช่องทางการติดต่อ</label>
+                <textarea id="address" placeholder="สถานที่จัดส่ง.." required></textarea>
             </div>
 
             <button type="submit" id="submit-btn" class="btn-main">ยืนยันการสั่งซื้อ</button>
@@ -180,103 +189,141 @@
 </div>
 
 <script>
-    // ส่วนหลังบ้าน (ตามโค้ดแรก ห้ามเปลี่ยน)
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbzyiRJS07kEjIXph8hTEBwYupKibmkF9Fe8ltVMhpwvsenxkiRBrAoufjyREc1QqFddow/exec';
-    let isStockAvailable = true;
-    let shopSchedule = {};
+
+    let isStockAvailable = true; 
+    let shopSchedule = {}; 
 
     function initApp() {
+        const loadingScreen = document.getElementById('loading-screen');
+        const homePage = document.getElementById('home-page');
+        const statusBox = document.getElementById('stock-status');
+        const mainOrderBtn = document.getElementById('main-order-btn');
+
         fetch(scriptUrl)
-        .then(res => res.json())
+        .then(response => response.json())
         .then(config => {
             isStockAvailable = config.isStockAvailable;
-            shopSchedule = config.schedule;
-            const statusBox = document.getElementById('stock-status');
-            const mainOrderBtn = document.getElementById('main-order-btn');
+            shopSchedule = config.schedule; 
 
             if (!isStockAvailable) {
                 statusBox.className = 'status-badge sold-out';
-                statusBox.innerHTML = '❌ สินค้าหมดชั่วคราว';
+                statusBox.innerHTML = '❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)';
                 mainOrderBtn.innerText = 'ปิดรับออเดอร์';
             } else {
-                mainOrderBtn.disabled = false;
-                mainOrderBtn.innerText = 'กดสั่งซื้อสินค้าตรงนี้ 😋';
+                statusBox.className = 'status-badge available';
+                statusBox.innerHTML = '✅ มีสินค้าพร้อมรับออเดอร์';
+                mainOrderBtn.innerText = 'สั่งเลย 😋';
+                mainOrderBtn.disabled = false; 
             }
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('home-page').classList.add('active');
-        }).catch(err => alert('ไม่สามารถโหลดข้อมูลร้านค้าได้'));
+
+            loadingScreen.style.display = 'none';
+            homePage.classList.add('active');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ ไม่สามารถโหลดข้อมูลร้านค้าได้');
+            loadingScreen.innerHTML = '⚠️ เกิดข้อผิดพลาด';
+        });
     }
 
     initApp();
 
+    function updateDeliveryRounds() {
+        const selectedDate = document.getElementById('delivery-date').value; 
+        const qtyWanted = parseInt(document.getElementById('quantity').value) || 1;
+        const roundSelect = document.getElementById('delivery-round');
+        const submitBtn = document.getElementById('submit-btn');
+        
+        roundSelect.innerHTML = '<option value="" disabled selected>กำลังเช็คโควตา...</option>';
+        submitBtn.disabled = false;
+
+        if (!selectedDate) return;
+
+        const dayConfig = shopSchedule[selectedDate];
+
+        if (dayConfig) {
+            if (dayConfig.isFull) {
+                roundSelect.innerHTML = '<option value="" disabled selected>❌ สินค้าหมดชั่วคราว</option>';
+                submitBtn.disabled = true;
+            } else if (dayConfig.quota > 0 && (dayConfig.booked + qtyWanted) > dayConfig.quota) {
+                const remaining = dayConfig.quota - dayConfig.booked;
+                roundSelect.innerHTML = `<option value="" disabled selected>❌ รับได้อีกแค่ ${remaining} ถ้วยค่ะ</option>`;
+                submitBtn.disabled = true;
+            } else {
+                roundSelect.innerHTML = '<option value="" disabled selected>เลือกรอบเวลา...</option>';
+                let hasRound = false;
+                if (dayConfig.morning) { roundSelect.innerHTML += '<option value="รอบเช้า (09:00)">รอบเช้า (09:00)</option>'; hasRound = true; }
+                if (dayConfig.afternoon) { roundSelect.innerHTML += '<option value="รอบบ่าย (13:00)">รอบบ่าย (13:00)</option>'; hasRound = true; }
+
+                if (!hasRound) {
+                    roundSelect.innerHTML = '<option value="" disabled selected>❌ วันนี้ปิดรับออเดอร์ค่ะ</option>';
+                    submitBtn.disabled = true;
+                }
+            }
+        } else {
+            roundSelect.innerHTML = '<option value="" disabled selected>❌ ยังไม่เปิดคิวสำหรับวันนี้ค่ะ</option>';
+            submitBtn.disabled = true;
+        }
+    }
+
     function goToOrder() {
+        if (!isStockAvailable) return;
         document.getElementById('home-page').classList.remove('active');
         document.getElementById('order-page').classList.add('active');
-        window.scrollTo(0,0);
-        calculatePrice();
+        window.scrollTo(0, 0); calculatePrice(); 
     }
+    
     function goToHome() {
         document.getElementById('order-page').classList.remove('active');
         document.getElementById('home-page').classList.add('active');
+        window.scrollTo(0, 0);
     }
-
+    
+    const checkAllBox = document.getElementById('check-all');
     const toppingBoxes = document.querySelectorAll('.topping');
-    function toggleAll() { 
-        toppingBoxes.forEach(box => box.checked = document.getElementById('check-all').checked); 
-        calculatePrice(); 
-    }
-    function checkIndividual() { 
-        document.getElementById('check-all').checked = Array.from(toppingBoxes).every(box => box.checked); 
-        calculatePrice(); 
-    }
-
+    function toggleAll() { toppingBoxes.forEach(box => box.checked = checkAllBox.checked); calculatePrice(); }
+    function checkIndividual() { checkAllBox.checked = Array.from(toppingBoxes).every(box => box.checked); calculatePrice(); }
+    
     function calculatePrice() {
         let checkedCount = 0; toppingBoxes.forEach(box => { if(box.checked) checkedCount++; });
         let pricePerCup = (checkedCount === 3) ? 39 : (checkedCount === 2) ? 35 : 30;
-        let qty = parseInt(document.getElementById('quantity').value) || 1;
-        document.getElementById('total-price-display').innerText = pricePerCup * qty;
-    }
-
-    function updateDeliveryRounds() {
-        const selectedDate = document.getElementById('delivery-date').value;
-        const roundSelect = document.getElementById('delivery-round');
-        const dayConfig = shopSchedule[selectedDate];
-        roundSelect.innerHTML = '<option value="" disabled selected>เลือกรอบเวลา...</option>';
-        
-        if (dayConfig) {
-            if (dayConfig.morning) roundSelect.innerHTML += '<option value="รอบเช้า (09:00)">รอบเช้า (09:00)</option>';
-            if (dayConfig.afternoon) roundSelect.innerHTML += '<option value="รอบบ่าย (13:00)">รอบบ่าย (13:00)</option>';
-        } else {
-            roundSelect.innerHTML = '<option value="" disabled selected>❌ ไม่มีรอบส่งในวันที่เลือก</option>';
-        }
+        let quantity = parseInt(document.getElementById('quantity').value);
+        if (isNaN(quantity) || quantity < 1) quantity = 1; 
+        document.getElementById('total-price-display').innerText = pricePerCup * quantity;
     }
 
     function submitOrder(event) {
         event.preventDefault();
-        const btn = document.getElementById('submit-btn');
-        btn.innerText = '⏳ กำลังส่ง...'; btn.disabled = true;
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.innerText = '⏳ กำลังส่งออเดอร์...'; submitBtn.disabled = true;
 
         let selectedToppings = [];
         toppingBoxes.forEach(box => { if(box.checked) selectedToppings.push(box.value); });
-        
+        let toppingsText = (selectedToppings.length > 0) ? selectedToppings.join(', ') : 'ไม่ใส่ท็อปปิ้ง';
+        let roundSelect = document.getElementById('delivery-round');
+        let roundText = roundSelect.options[roundSelect.selectedIndex].text;
+
         const orderData = {
             customerName: document.getElementById('customer-name').value,
             texture: document.querySelector('input[name="texture"]:checked').value,
-            toppings: selectedToppings.join(', '),
+            toppings: toppingsText,
             quantity: document.getElementById('quantity').value,
             totalPrice: document.getElementById('total-price-display').innerText,
             deliveryDate: document.getElementById('delivery-date').value,
-            deliveryRound: document.getElementById('delivery-round').value,
+            deliveryRound: roundText,
             address: document.getElementById('address').value
         };
 
         fetch(scriptUrl, { method: 'POST', body: JSON.stringify(orderData) })
-        .then(() => {
-            alert('🎉 สั่งซื้อสำเร็จ!');
-            location.reload();
-        }).catch(() => {
-            alert('❌ เกิดข้อผิดพลาด');
-            btn.disabled = false;
+        .then(response => {
+            alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์แล้วค่ะ');
+            location.reload(); 
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('❌ มีข้อผิดพลาด! กรุณาลองใหม่อีกครั้ง');
+            submitBtn.innerText = 'ยืนยันการสั่งซื้อ'; submitBtn.disabled = false;
         });
     }
 </script>
