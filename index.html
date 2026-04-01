@@ -36,7 +36,6 @@
         h1 { text-align: center; color: var(--primary-color); margin-bottom: 10px; font-size: 24px; }
         .home-content { text-align: center; margin-top: 20px; }
 
-        /* --- สไตล์หน้า Home (แบบที่คุณชอบ) --- */
         .product-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -66,7 +65,6 @@
         .logo-footer { text-align: center; margin-top: 30px; padding: 20px; background-color: #f1f8ff; border-radius: 15px; }
         .logo-footer img { max-width: 150px; height: auto; border-radius: 20px; }
 
-        /* --- สไตล์หน้าฟอร์ม (คงไว้ตามโค้ดแรก) --- */
         .price-tag { text-align: center; background-color: var(--accent-color); color: #000; padding: 10px; border-radius: 10px; font-size: 20px; font-weight: 700; margin-bottom: 20px; }
         .status-badge { text-align: center; padding: 15px; border-radius: 10px; font-size: 18px; font-weight: 600; margin-bottom: 20px; }
         .status-badge.available { background-color: #e8f5e9; color: #2e7d32; border: 2px solid #4caf50; }
@@ -77,7 +75,6 @@
         .checkbox-label { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
         .checkbox-label input { width: 20px; height: 20px; margin-right: 10px; }
         input[type="text"], input[type="date"], input[type="number"], select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Prompt'; }
-        .divider { height: 1px; background: #ddd; margin: 15px 0; }
         .total-price-box { background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 10px; text-align: center; font-size: 22px; font-weight: 700; border: 2px dashed #4caf50; margin-bottom: 20px; }
         .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
         .btn-main { display: block; width: 100%; padding: 15px; background-color: #1a53ad; color: white; text-align: center; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
@@ -94,10 +91,10 @@
     <div id="home-page" class="page">
         <div class="home-content">
             <h1>🍯 ร้านกรีกโยเกิร์ตโฮมเมด</h1>
-            <div class="price-tag">ราคาเพียง 39 บาท!</div>
+            <div class="price-tag">เริ่มต้นเพียง 39 บาท!</div>
 
             <div id="stock-status" class="status-badge available">
-                ✅ มีสินค้าพร้อมรับออเดอร์
+                ✅ วันนี้เปิดร้านนะคะ 🍯✨
             </div>
 
             <div class="product-grid">
@@ -111,7 +108,7 @@
             </div>
 
             <button id="main-order-btn" class="btn-order" onclick="goToOrder()" disabled>
-                กดสั่งซื้อสินค้าตรงนี้ 😋
+                สั่งเลย 😋
             </button>
 
             <div class="logo-footer">
@@ -132,31 +129,27 @@
             </div>
 
             <div class="form-group">
-                <label>ระดับความหนึบที่ชอบ</label>
+                <label>เลือกขนาด (Size)</label>
                 <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="radio" name="texture" value="หนึบ" checked> เนื้อแน่นกำลังดี (สูตรมาตรฐานของร้าน)</label>
-                    <label class="checkbox-label"><input type="radio" name="texture" value="นุ่มละมุน"> เนื้อหนึบ เนียนนุ่ม (ทานง่าย คล่องคอ)</label>
+                    <label class="checkbox-label"><input type="radio" name="size" value="39" onchange="calculatePrice()" checked> ไซส์ปกติ (39 บาท)</label>
+                    <label class="checkbox-label"><input type="radio" name="size" value="69" onchange="calculatePrice()"> ไซส์พิเศษ จุกๆ (69 บาท)</label>
                 </div>
             </div>
 
            <div class="form-group">
-                <label>เลือกท็อปปิ้ง (สูงสุด 3 อย่าง)</label>
+                <label>เลือกท็อปปิ้ง (ฟรีทุกอย่างในราคาเดียว!)</label>
                 <div class="checkbox-group">
                     <label class="checkbox-label">
-                        <input type="checkbox" id="check-all" onchange="toggleAll()" checked> <b>ใส่ทุกอย่าง (39 บาท)</b>
-                    </label>
-                    <div class="divider"></div>
-                    <label class="checkbox-label">
-                        <input type="checkbox" class="topping" value="แครกเกอร์" onchange="checkIndividual()" checked> แครกเกอร์
+                        <input type="checkbox" class="topping" value="น้ำผึ้ง" checked> น้ำผึ้ง 
                     </label>
                     <label class="checkbox-label">
-                        <input type="checkbox" class="topping" value="น้ำผึ้ง" onchange="checkIndividual()" checked> น้ำผึ้ง
+                        <input type="checkbox" class="topping" value="แครกเกอร์" checked> แครกเกอร์
                     </label>
                     <label class="checkbox-label">
-                        <input type="checkbox" class="topping" value="กล้วย" onchange="checkIndividual()" checked> กล้วย
+                        <input type="checkbox" class="topping" value="กล้วย" checked> กล้วย
                     </label>
                 </div>
-                <small style="color: #666; margin-top: 5px; display: block;">* เลือก 2 อย่าง 35.- / เลือก 1 อย่างหรือไม่ใส่เลย 30.-</small>
+                <small style="color: #666; margin-top: 5px; display: block;">* ติ๊กเลือกใส่ได้ตามใจชอบเลยค่ะ ราคาเดียวคุ้มๆ!</small>
             </div>
 
             <div class="form-group">
@@ -197,8 +190,8 @@
    function initApp() {
         const loadingScreen = document.getElementById('loading-screen');
         const homePage = document.getElementById('home-page');
-        const statusBox = document.getElementById('stock-status'); // จุดที่แสดงแถบเขียว/แดง
-        const mainOrderBtn = document.getElementById('main-order-btn'); // จุดที่เป็นปุ่มกดสั่ง
+        const statusBox = document.getElementById('stock-status');
+        const mainOrderBtn = document.getElementById('main-order-btn'); 
 
         fetch(scriptUrl)
         .then(response => response.json())
@@ -206,29 +199,22 @@
             isStockAvailable = config.isStockAvailable;
             shopSchedule = config.schedule; 
 
-            // --- ส่วนที่ควบคุมการแสดงผลหน้า Home ---
             if (!isStockAvailable) {
-                // 1. เปลี่ยนแถบสถานะเป็นสีแดงและแจ้งว่าหมด
                 statusBox.className = 'status-badge sold-out';
                 statusBox.innerHTML = '❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)';
-                
-                // 2. เปลี่ยนข้อความที่ปุ่ม และทำให้กดไม่ได้ (Disabled)
                 mainOrderBtn.innerText = 'ปิดรับออเดอร์ชั่วคราว';
                 mainOrderBtn.disabled = true; 
-                mainOrderBtn.style.backgroundColor = '#cccccc'; // เปลี่ยนสีปุ่มเป็นสีเทา
+                mainOrderBtn.style.backgroundColor = '#cccccc'; 
             } else {
-                // กรณีมีของปกติ
                 statusBox.className = 'status-badge available';
-                statusBox.innerHTML = '✅ มีสินค้าพร้อมรับออเดอร์';
+                statusBox.innerHTML = '✅ วันนี้เปิดร้านนะคะ 🍯✨'; // <--- อัปเดตข้อความตรงนี้แล้ว
                 mainOrderBtn.innerText = 'สั่งเลย 😋';
                 mainOrderBtn.disabled = false; 
             }
-            // ---------------------------------------
 
             loadingScreen.style.display = 'none';
             homePage.classList.add('active');
         })
-        // ... ส่วนที่เหลือห้ามเปลี่ยน ...
         .catch(error => {
             console.error('Error:', error);
             alert('❌ ไม่สามารถโหลดข้อมูลร้านค้าได้');
@@ -289,17 +275,11 @@
         window.scrollTo(0, 0);
     }
     
-    const checkAllBox = document.getElementById('check-all');
-    const toppingBoxes = document.querySelectorAll('.topping');
-    function toggleAll() { toppingBoxes.forEach(box => box.checked = checkAllBox.checked); calculatePrice(); }
-    function checkIndividual() { checkAllBox.checked = Array.from(toppingBoxes).every(box => box.checked); calculatePrice(); }
-    
     function calculatePrice() {
-        let checkedCount = 0; toppingBoxes.forEach(box => { if(box.checked) checkedCount++; });
-        let pricePerCup = (checkedCount === 3) ? 39 : (checkedCount === 2) ? 35 : 30;
+        let sizePrice = parseInt(document.querySelector('input[name="size"]:checked').value);
         let quantity = parseInt(document.getElementById('quantity').value);
         if (isNaN(quantity) || quantity < 1) quantity = 1; 
-        document.getElementById('total-price-display').innerText = pricePerCup * quantity;
+        document.getElementById('total-price-display').innerText = sizePrice * quantity;
     }
 
     function submitOrder(event) {
@@ -307,15 +287,19 @@
         const submitBtn = document.getElementById('submit-btn');
         submitBtn.innerText = '⏳ กำลังส่งออเดอร์...'; submitBtn.disabled = true;
 
+        const toppingBoxes = document.querySelectorAll('.topping');
         let selectedToppings = [];
         toppingBoxes.forEach(box => { if(box.checked) selectedToppings.push(box.value); });
-        let toppingsText = (selectedToppings.length > 0) ? selectedToppings.join(', ') : 'ไม่ใส่ท็อปปิ้ง';
+        let toppingsText = (selectedToppings.length > 0) ? selectedToppings.join(', ') : 'ไม่รับท็อปปิ้งเลย';
         let roundSelect = document.getElementById('delivery-round');
         let roundText = roundSelect.options[roundSelect.selectedIndex].text;
 
+        let selectedSizeVal = document.querySelector('input[name="size"]:checked').value;
+        let sizeText = (selectedSizeVal === "39") ? "ไซส์ปกติ (39.-)" : "ไซส์พิเศษ (69.-)";
+
         const orderData = {
             customerName: document.getElementById('customer-name').value,
-            texture: document.querySelector('input[name="texture"]:checked').value,
+            texture: sizeText, 
             toppings: toppingsText,
             quantity: document.getElementById('quantity').value,
             totalPrice: document.getElementById('total-price-display').innerText,
