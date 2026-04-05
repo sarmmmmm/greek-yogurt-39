@@ -74,7 +74,7 @@
         .checkbox-group { background: var(--bg-color); padding: 15px; border-radius: 10px; border: 1px solid #eee; }
         .checkbox-label { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
         .checkbox-label input { width: 20px; height: 20px; margin-right: 10px; }
-        input[type="text"], input[type="date"], input[type="number"], select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Prompt'; }
+        input[type="text"], input[type="date"], input[type="number"], select, textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Prompt'; background-color: white;}
         .total-price-box { background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 10px; text-align: center; font-size: 22px; font-weight: 700; border: 2px dashed #4caf50; margin-bottom: 20px; }
         .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
         .btn-main { display: block; width: 100%; padding: 15px; background-color: #1a53ad; color: white; text-align: center; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
@@ -122,7 +122,7 @@
         <button style="border:none; background:none; color:#0056b3; cursor:pointer; font-family:'Prompt'; margin-bottom: 15px;" onclick="goToHome()">❮ กลับหน้าหลัก</button>
         <h1>ฟอร์มสั่งซื้อสินค้า</h1>
         
-        <form id="order-form" onsubmit="submitOrder(event)">
+        <form id="order-form" onsubmit="goToPayment(event)">
             <div class="form-group">
                 <label>ชื่อลูกค้า (ชื่อที่แม่ค้าจำได้ 💖)</label>
                 <input type="text" id="customer-name" placeholder="ระบุชื่อของคุณ" required>
@@ -139,15 +139,9 @@
            <div class="form-group">
                 <label>เลือกท็อปปิ้ง (ฟรีทุกอย่างในราคาเดียว!)</label>
                 <div class="checkbox-group">
-                    <label class="checkbox-label">
-                        <input type="checkbox" class="topping" value="น้ำผึ้ง" checked> น้ำผึ้ง 
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" class="topping" value="แครกเกอร์" checked> แครกเกอร์
-                    </label>
-                    <label class="checkbox-label">
-                        <input type="checkbox" class="topping" value="กล้วย" checked> กล้วย
-                    </label>
+                    <label class="checkbox-label"><input type="checkbox" class="topping" value="น้ำผึ้ง" checked> น้ำผึ้ง</label>
+                    <label class="checkbox-label"><input type="checkbox" class="topping" value="แครกเกอร์" checked> แครกเกอร์</label>
+                    <label class="checkbox-label"><input type="checkbox" class="topping" value="กล้วย" checked> กล้วย</label>
                 </div>
                 <small style="color: #666; margin-top: 5px; display: block;">* ติ๊กเลือกใส่ได้ตามใจชอบเลยค่ะ ราคาเดียวคุ้มๆ!</small>
             </div>
@@ -176,23 +170,48 @@
                 <textarea id="address" placeholder="สถานที่จัดส่ง.." required></textarea>
             </div>
 
-            <button type="submit" id="submit-btn" class="btn-main">ยืนยันการสั่งซื้อ</button>
+            <button type="submit" class="btn-main">ดำเนินการชำระเงิน</button>
         </form>
     </div>
+
+    <div id="payment-page" class="page">
+        <button style="border:none; background:none; color:#0056b3; cursor:pointer; font-family:'Prompt'; margin-bottom: 15px;" onclick="goBackToOrder()">❮ กลับไปแก้ไขออเดอร์</button>
+        <h1>ชำระเงิน</h1>
+
+        <div style="text-align: center; margin-bottom: 20px; padding: 20px; background: #fff; border-radius: 15px; border: 1px solid #ddd;">
+            <p style="font-size: 18px;">ยอดที่ต้องชำระ</p>
+            <p style="font-size: 32px; font-weight: bold; color: #2e7d32; margin-bottom: 15px;"><span id="payment-total-display">0</span>.-</p>
+            
+            <img src="qr.jpg" alt="QR Code" style="max-width: 200px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+            <p style="font-size: 14px; color: #666; margin-top: 10px;">สแกนเพื่อชำระเงิน</p>
+        </div>
+
+        <div class="form-group">
+            <label>แนบหลักฐานการโอนเงิน (สลิป) 🧾</label>
+            <input type="file" id="slip-file" accept="image/*" onchange="previewSlip(event)" required>
+            <img id="slip-preview" style="max-width: 100%; margin-top: 15px; display: none; border-radius: 10px; border: 1px solid #ddd;">
+        </div>
+
+        <button type="button" id="submit-btn" class="btn-main" onclick="submitOrder(event)">ยืนยันออเดอร์และส่งสลิป</button>
+    </div>
+
 </div>
 
 <script>
+    // URL Google Sheet ของคุณ
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbzyiRJS07kEjIXph8hTEBwYupKibmkF9Fe8ltVMhpwvsenxkiRBrAoufjyREc1QqFddow/exec';
 
     let isStockAvailable = true; 
     let shopSchedule = {}; 
+    let slipBase64 = ""; 
 
-   function initApp() {
+    function initApp() {
         const loadingScreen = document.getElementById('loading-screen');
         const homePage = document.getElementById('home-page');
         const statusBox = document.getElementById('stock-status');
         const mainOrderBtn = document.getElementById('main-order-btn'); 
 
+        // ดึงข้อมูลเช็คสต๊อกจาก Sheet
         fetch(scriptUrl)
         .then(response => response.json())
         .then(config => {
@@ -207,7 +226,7 @@
                 mainOrderBtn.style.backgroundColor = '#cccccc'; 
             } else {
                 statusBox.className = 'status-badge available';
-                statusBox.innerHTML = '✅ วันนี้เปิดร้านนะคะ 🍯✨'; // <--- อัปเดตข้อความตรงนี้แล้ว
+                statusBox.innerHTML = '✅ วันนี้เปิดร้านนะคะ 🍯✨';
                 mainOrderBtn.innerText = 'สั่งเลย 😋';
                 mainOrderBtn.disabled = false; 
             }
@@ -228,10 +247,8 @@
         const selectedDate = document.getElementById('delivery-date').value; 
         const qtyWanted = parseInt(document.getElementById('quantity').value) || 1;
         const roundSelect = document.getElementById('delivery-round');
-        const submitBtn = document.getElementById('submit-btn');
         
         roundSelect.innerHTML = '<option value="" disabled selected>กำลังเช็คโควตา...</option>';
-        submitBtn.disabled = false;
 
         if (!selectedDate) return;
 
@@ -240,11 +257,9 @@
         if (dayConfig) {
             if (dayConfig.isFull) {
                 roundSelect.innerHTML = '<option value="" disabled selected>❌ สินค้าหมดชั่วคราว</option>';
-                submitBtn.disabled = true;
             } else if (dayConfig.quota > 0 && (dayConfig.booked + qtyWanted) > dayConfig.quota) {
                 const remaining = dayConfig.quota - dayConfig.booked;
                 roundSelect.innerHTML = `<option value="" disabled selected>❌ รับได้อีกแค่ ${remaining} ถ้วยค่ะ</option>`;
-                submitBtn.disabled = true;
             } else {
                 roundSelect.innerHTML = '<option value="" disabled selected>เลือกรอบเวลา...</option>';
                 let hasRound = false;
@@ -253,12 +268,10 @@
 
                 if (!hasRound) {
                     roundSelect.innerHTML = '<option value="" disabled selected>❌ วันนี้ปิดรับออเดอร์ค่ะ</option>';
-                    submitBtn.disabled = true;
                 }
             }
         } else {
             roundSelect.innerHTML = '<option value="" disabled selected>❌ ยังไม่เปิดคิวสำหรับวันนี้ค่ะ</option>';
-            submitBtn.disabled = true;
         }
     }
 
@@ -274,6 +287,20 @@
         document.getElementById('home-page').classList.add('active');
         window.scrollTo(0, 0);
     }
+
+    function goToPayment(event) {
+        event.preventDefault(); 
+        document.getElementById('payment-total-display').innerText = document.getElementById('total-price-display').innerText;
+        document.getElementById('order-page').classList.remove('active');
+        document.getElementById('payment-page').classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    function goBackToOrder() {
+        document.getElementById('payment-page').classList.remove('active');
+        document.getElementById('order-page').classList.add('active');
+        window.scrollTo(0, 0);
+    }
     
     function calculatePrice() {
         let sizePrice = parseInt(document.querySelector('input[name="size"]:checked').value);
@@ -282,21 +309,45 @@
         document.getElementById('total-price-display').innerText = sizePrice * quantity;
     }
 
+    function previewSlip(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewImg = document.getElementById('slip-preview');
+                previewImg.src = e.target.result;
+                previewImg.style.display = 'block';
+                // ตัดเอาเฉพาะเนื้อหา Base64 ไปส่ง
+                slipBase64 = e.target.result.split(',')[1]; 
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
     function submitOrder(event) {
         event.preventDefault();
+
+        if (!slipBase64) {
+            alert('⚠️ กรุณาแนบสลิปการโอนเงินก่อนยืนยันออเดอร์นะคะ');
+            return;
+        }
+        
         const submitBtn = document.getElementById('submit-btn');
-        submitBtn.innerText = '⏳ กำลังส่งออเดอร์...'; submitBtn.disabled = true;
+        submitBtn.innerText = '⏳ กำลังอัปโหลดสลิปและส่งออเดอร์...';
+        submitBtn.disabled = true;
 
         const toppingBoxes = document.querySelectorAll('.topping');
         let selectedToppings = [];
         toppingBoxes.forEach(box => { if(box.checked) selectedToppings.push(box.value); });
         let toppingsText = (selectedToppings.length > 0) ? selectedToppings.join(', ') : 'ไม่รับท็อปปิ้งเลย';
+        
         let roundSelect = document.getElementById('delivery-round');
         let roundText = roundSelect.options[roundSelect.selectedIndex].text;
 
         let selectedSizeVal = document.querySelector('input[name="size"]:checked').value;
         let sizeText = (selectedSizeVal === "39") ? "ไซส์ปกติ (39.-)" : "ไซส์พิเศษ (69.-)";
 
+        // รวบรวมข้อมูลทั้งหมด รวมถึงสลิป
         const orderData = {
             customerName: document.getElementById('customer-name').value,
             texture: sizeText, 
@@ -305,18 +356,26 @@
             totalPrice: document.getElementById('total-price-display').innerText,
             deliveryDate: document.getElementById('delivery-date').value,
             deliveryRound: roundText,
-            address: document.getElementById('address').value
+            address: document.getElementById('address').value,
+            slipBase64: slipBase64,
+            slipFileName: "slip_" + document.getElementById('customer-name').value + "_" + new Date().getTime() + ".jpg"
         };
 
         fetch(scriptUrl, { method: 'POST', body: JSON.stringify(orderData) })
-        .then(response => {
-            alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์แล้วค่ะ');
-            location.reload(); 
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์พร้อมสลิปแล้วค่ะ');
+                location.reload(); 
+            } else {
+                alert('❌ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: ' + data.message);
+                submitBtn.innerText = 'ยืนยันออเดอร์และส่งสลิป'; submitBtn.disabled = false;
+            }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('❌ มีข้อผิดพลาด! กรุณาลองใหม่อีกครั้ง');
-            submitBtn.innerText = 'ยืนยันการสั่งซื้อ'; submitBtn.disabled = false;
+            submitBtn.innerText = 'ยืนยันออเดอร์และส่งสลิป'; submitBtn.disabled = false;
         });
     }
 </script>
