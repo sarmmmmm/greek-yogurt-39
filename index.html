@@ -170,6 +170,14 @@
                 <textarea id="address" placeholder="สถานที่จัดส่ง.." required></textarea>
             </div>
 
+            <div class="form-group">
+                <label>วิธีการชำระเงิน</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="radio" name="payment-method" value="transfer" onchange="updateSubmitButton()" checked> สแกนจ่าย</label>
+                    <label class="checkbox-label"><input type="radio" name="payment-method" value="cod" onchange="updateSubmitButton()"> เงินสด</label>
+                </div>
+            </div>
+
             <button type="submit" class="btn-main">ดำเนินการชำระเงิน</button>
         </form>
     </div>
@@ -188,17 +196,17 @@
 
         <div class="form-group">
             <label>แนบหลักฐานการโอนเงิน (สลิป) 🧾</label>
-            <input type="file" id="slip-file" accept="image/*" onchange="previewSlip(event)" required>
+            <input type="file" id="slip-file" accept="image/*" onchange="previewSlip(event)">
             <img id="slip-preview" style="max-width: 100%; margin-top: 15px; display: none; border-radius: 10px; border: 1px solid #ddd;">
         </div>
 
-        <button type="button" id="submit-btn" class="btn-main" onclick="submitOrder(event)">ยืนยันออเดอร์และส่งสลิป</button>
+        <button type="button" id="submit-btn" class="btn-main" onclick="submitOrder(event, 'transfer')">ยืนยันออเดอร์และส่งสลิป</button>
     </div>
 
 </div>
 
 <script>
-   // URL Google Sheet ของคุณ
+    // URL Google Sheet ของคุณ
     const scriptUrl = 'https://script.google.com/macros/s/AKfycbxC88XmUVgxBXmXHqD7Sm_PsvJBctPHhi-r7-unu7K0BKv9IkbESrcSowEzq2NBxFIH1w/exec';
     let isStockAvailable = true; 
     let shopSchedule = {}; 
@@ -287,12 +295,30 @@
         window.scrollTo(0, 0);
     }
 
+    // ฟังก์ชันอัปเดตข้อความบนปุ่ม
+    function updateSubmitButton() {
+        const method = document.querySelector('input[name="payment-method"]:checked').value;
+        const btn = document.querySelector('#order-form .btn-main');
+        if (method === 'cod') {
+            btn.innerText = 'ยืนยันออเดอร์ (จ่ายเงินตอนรับของ)';
+        } else {
+            btn.innerText = 'ดำเนินการชำระเงิน';
+        }
+    }
+
     function goToPayment(event) {
         event.preventDefault(); 
-        document.getElementById('payment-total-display').innerText = document.getElementById('total-price-display').innerText;
-        document.getElementById('order-page').classList.remove('active');
-        document.getElementById('payment-page').classList.add('active');
-        window.scrollTo(0, 0);
+        const method = document.querySelector('input[name="payment-method"]:checked').value;
+
+        // ถ้าเลือกจ่ายตอนรับของ ให้ข้ามหน้าสลิปแล้วส่งออเดอร์เลย
+        if (method === 'cod') {
+            submitOrder(event, 'cod');
+        } else {
+            document.getElementById('payment-total-display').innerText = document.getElementById('total-price-display').innerText;
+            document.getElementById('order-page').classList.remove('active');
+            document.getElementById('payment-page').classList.add('active');
+            window.scrollTo(0, 0);
+        }
     }
 
     function goBackToOrder() {
@@ -323,16 +349,23 @@
         }
     }
 
-    function submitOrder(event) {
+    function submitOrder(event, paymentType = 'transfer') {
         event.preventDefault();
 
-        if (!slipBase64) {
+        // ตรวจสอบสลิปเฉพาะกรณีเลือกโอนเงินล่วงหน้า
+        if (paymentType === 'transfer' && !slipBase64) {
             alert('⚠️ กรุณาแนบสลิปการโอนเงินก่อนยืนยันออเดอร์นะคะ');
             return;
         }
         
-        const submitBtn = document.getElementById('submit-btn');
-        submitBtn.innerText = '⏳ กำลังอัปโหลดสลิปและส่งออเดอร์...';
+        let submitBtn;
+        if (paymentType === 'cod') {
+            submitBtn = document.querySelector('#order-form .btn-main');
+            submitBtn.innerText = '⏳ กำลังส่งออเดอร์...';
+        } else {
+            submitBtn = document.getElementById('submit-btn');
+            submitBtn.innerText = '⏳ กำลังอัปโหลดสลิปและส่งออเดอร์...';
+        }
         submitBtn.disabled = true;
 
         const toppingBoxes = document.querySelectorAll('.topping');
@@ -345,8 +378,10 @@
 
         let selectedSizeVal = document.querySelector('input[name="size"]:checked').value;
         let sizeText = (selectedSizeVal === "39") ? "ไซส์ปกติ (39.-)" : "ไซส์พิเศษ (69.-)";
+        
+        let paymentText = (paymentType === 'cod') ? "จ่ายเงินตอนรับของ" : "โอนเงิน";
 
-        // รวบรวมข้อมูลทั้งหมด รวมถึงสลิป
+        // รวบรวมข้อมูลทั้งหมด รวมถึงวิธีการชำระเงิน
         const orderData = {
             customerName: document.getElementById('customer-name').value,
             texture: sizeText, 
@@ -356,26 +391,37 @@
             deliveryDate: document.getElementById('delivery-date').value,
             deliveryRound: roundText,
             address: document.getElementById('address').value,
-            slipBase64: slipBase64,
-            slipFileName: "slip_" + document.getElementById('customer-name').value + "_" + new Date().getTime() + ".jpg"
+            paymentMethod: paymentText, // ส่งข้อมูลว่าโอนเงิน หรือ เก็บปลายทาง
+            slipBase64: (paymentType === 'cod') ? "" : slipBase64,
+            slipFileName: (paymentType === 'cod') ? "" : "slip_" + document.getElementById('customer-name').value + "_" + new Date().getTime() + ".jpg"
         };
 
         fetch(scriptUrl, { method: 'POST', body: JSON.stringify(orderData) })
         .then(response => response.json())
         .then(data => {
             if (data.status === "success") {
-                alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์พร้อมสลิปแล้วค่ะ');
+                alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์แล้วค่ะ');
                 location.reload(); 
             } else {
                 alert('❌ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: ' + data.message);
-                submitBtn.innerText = 'ยืนยันออเดอร์และส่งสลิป'; submitBtn.disabled = false;
+                resetSubmitButton(paymentType, submitBtn);
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('❌ มีข้อผิดพลาด! กรุณาลองใหม่อีกครั้ง');
-            submitBtn.innerText = 'ยืนยันออเดอร์และส่งสลิป'; submitBtn.disabled = false;
+            resetSubmitButton(paymentType, submitBtn);
         });
+    }
+
+    // ฟังก์ชันเสริมสำหรับรีเซ็ตปุ่มเวลามี Error
+    function resetSubmitButton(paymentType, btn) {
+        if (paymentType === 'cod') {
+            btn.innerText = 'ยืนยันออเดอร์ (จ่ายเงินตอนรับของ)';
+        } else {
+            btn.innerText = 'ยืนยันออเดอร์และส่งสลิป';
+        }
+        btn.disabled = false;
     }
 </script>
 
