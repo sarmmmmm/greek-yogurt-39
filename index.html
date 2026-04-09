@@ -73,7 +73,7 @@
         .form-group label { display: block; font-weight: 600; margin-bottom: 10px; }
         .checkbox-group { background: var(--bg-color); padding: 15px; border-radius: 10px; border: 1px solid #eee; }
         .checkbox-label { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
-        .checkbox-label input { width: 20px; height: 20px; margin-right: 10px; }
+        .checkbox-label input[type="radio"], .checkbox-label input[type="checkbox"] { width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0; }
         input[type="text"], input[type="date"], input[type="number"], select, textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Prompt'; background-color: white;}
         .total-price-box { background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 10px; text-align: center; font-size: 22px; font-weight: 700; border: 2px dashed #4caf50; margin-bottom: 20px; }
         .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
@@ -119,7 +119,7 @@
     </div>
 
     <div id="order-page" class="page">
-        <button style="border:none; background:none; color:#0056b3; cursor:pointer; font-family:'Prompt'; margin-bottom: 15px;" onclick="goToHome()">❮ กลับหน้าหลัก</button>
+        <button type="button" style="border:none; background:none; color:#0056b3; cursor:pointer; font-family:'Prompt'; margin-bottom: 15px;" onclick="goToHome()">❮ กลับหน้าหลัก</button>
         <h1>ฟอร์มสั่งซื้อสินค้า</h1>
         
         <form id="order-form" onsubmit="goToPayment(event)">
@@ -151,8 +151,6 @@
                 <input type="number" id="quantity" value="1" min="1" oninput="calculatePrice(); updateDeliveryRounds();" required>
             </div>
 
-            <div class="total-price-box">ยอดรวม: <span id="total-price-display">39</span> บาท</div>
-
             <div class="form-group">
                 <label>วันที่ต้องการรับสินค้า</label>
                 <input type="date" id="delivery-date" onchange="updateDeliveryRounds()" required>
@@ -160,9 +158,9 @@
 
             <div class="form-group">
                 <label>เลือกรอบส่ง</label>
-                <select id="delivery-round" required>
-                    <option value="" disabled selected>กรุณาเลือกวันที่ก่อนค่ะ...</option>
-                </select>
+                <div id="delivery-round-container" class="checkbox-group">
+                    <p style="color: #666; margin: 0; font-size: 14px;">กรุณาเลือกวันที่ก่อนค่ะ...</p>
+                </div>
             </div>
 
             <div class="form-group">
@@ -178,12 +176,14 @@
                 </div>
             </div>
 
+            <div class="total-price-box">ยอดรวม: <span id="total-price-display">39</span> บาท</div>
+
             <button type="submit" class="btn-main">ดำเนินการชำระเงิน</button>
         </form>
     </div>
 
     <div id="payment-page" class="page">
-        <button style="border:none; background:none; color:#0056b3; cursor:pointer; font-family:'Prompt'; margin-bottom: 15px;" onclick="goBackToOrder()">❮ กลับไปแก้ไขออเดอร์</button>
+        <button type="button" style="border:none; background:none; color:#0056b3; cursor:pointer; font-family:'Prompt'; margin-bottom: 15px;" onclick="goBackToOrder()">❮ กลับไปแก้ไขออเดอร์</button>
         <h1>ชำระเงิน</h1>
 
         <div style="text-align: center; margin-bottom: 20px; padding: 20px; background: #fff; border-radius: 15px; border: 1px solid #ddd;">
@@ -206,8 +206,9 @@
 </div>
 
 <script>
-   // URL Google Sheet ของคุณ (อัปเดตเป็นลิงก์ใหม่ล่าสุด)
-const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX4sxOiFPW5gMMRfWXq9bGTnki_6aaX_EEk2ApLrv_yy-aKzlQ/exec';
+    // URL Google Sheet ล่าสุดของคุณ
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX4sxOiFPW5gMMRfWXq9bGTnki_6aaX_EEk2ApLrv_yy-aKzlQ/exec';
+    let isStockAvailable = true; 
     let shopSchedule = {}; 
     let slipBase64 = ""; 
 
@@ -217,7 +218,6 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX
         const statusBox = document.getElementById('stock-status');
         const mainOrderBtn = document.getElementById('main-order-btn'); 
 
-        // ดึงข้อมูลเช็คสต๊อกจาก Sheet
         fetch(scriptUrl)
         .then(response => response.json())
         .then(config => {
@@ -249,36 +249,54 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX
 
     initApp();
 
+    // 🚩 ส่วนที่ 2: อัปเดตฟังก์ชันสลับเปลี่ยนจาก <select> มาแสดง Radio buttons รอบส่ง
     function updateDeliveryRounds() {
         const selectedDate = document.getElementById('delivery-date').value; 
         const qtyWanted = parseInt(document.getElementById('quantity').value) || 1;
-        const roundSelect = document.getElementById('delivery-round');
+        const roundContainer = document.getElementById('delivery-round-container');
         
-        roundSelect.innerHTML = '<option value="" disabled selected>กำลังเช็คโควตา...</option>';
+        roundContainer.innerHTML = '<p style="color: #666; margin: 0; font-size: 14px;">⏳ กำลังเช็คโควตา...</p>';
 
-        if (!selectedDate) return;
+        if (!selectedDate) {
+            calculatePrice();
+            return;
+        }
 
         const dayConfig = shopSchedule[selectedDate];
 
         if (dayConfig) {
             if (dayConfig.isFull) {
-                roundSelect.innerHTML = '<option value="" disabled selected>❌ สินค้าหมดชั่วคราว</option>';
+                roundContainer.innerHTML = '<p style="color: #c62828; margin: 0; font-weight: bold;">❌ สินค้าหมดชั่วคราว</p>';
             } else if (dayConfig.quota > 0 && (dayConfig.booked + qtyWanted) > dayConfig.quota) {
                 const remaining = dayConfig.quota - dayConfig.booked;
-                roundSelect.innerHTML = `<option value="" disabled selected>❌ รับได้อีกแค่ ${remaining} ถ้วยค่ะ</option>`;
+                roundContainer.innerHTML = `<p style="color: #c62828; margin: 0; font-weight: bold;">❌ รับได้อีกแค่ ${remaining} ถ้วยค่ะ</p>`;
             } else {
-                roundSelect.innerHTML = '<option value="" disabled selected>เลือกรอบเวลา...</option>';
+                roundContainer.innerHTML = ''; // ล้างค่าเดิม
                 let hasRound = false;
-                if (dayConfig.morning) { roundSelect.innerHTML += '<option value="รอบเช้า (09:00)">รอบเช้า (09:00)</option>'; hasRound = true; }
-                if (dayConfig.afternoon) { roundSelect.innerHTML += '<option value="รอบบ่าย (13:00)">รอบบ่าย (13:00)</option>'; hasRound = true; }
+                
+                if (dayConfig.morning) { 
+                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบเช้า (09:00)" onchange="calculatePrice()" required> รอบเช้า (09:00)</label>`; 
+                    hasRound = true; 
+                }
+                if (dayConfig.afternoon) { 
+                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบบ่าย (13:00)" onchange="calculatePrice()" required> รอบบ่าย (13:00)</label>`; 
+                    hasRound = true; 
+                }
+
+                // แทรกรอบดึกเข้าไปด้วยเสมอถ้าวันนั้นมีคิวว่าง
+                if (hasRound) {
+                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบดึก (หลัง 18:00)" onchange="calculatePrice()" required> รอบดึกหลัง 18.00 (บวกค่าส่ง 10.-)</label>`;
+                }
 
                 if (!hasRound) {
-                    roundSelect.innerHTML = '<option value="" disabled selected>❌ วันนี้ปิดรับออเดอร์ค่ะ</option>';
+                    roundContainer.innerHTML = '<p style="color: #c62828; margin: 0; font-weight: bold;">❌ วันนี้ปิดรับออเดอร์ค่ะ</p>';
                 }
             }
         } else {
-            roundSelect.innerHTML = '<option value="" disabled selected>❌ ยังไม่เปิดคิวสำหรับวันนี้ค่ะ</option>';
+            roundContainer.innerHTML = '<p style="color: #c62828; margin: 0; font-weight: bold;">❌ ยังไม่เปิดคิวสำหรับวันนี้ค่ะ</p>';
         }
+        
+        calculatePrice(); // อัปเดตราคาใหม่เผื่อมีการเปลี่ยนวันแล้วตัวเลือกหายไป
     }
 
     function goToOrder() {
@@ -294,7 +312,6 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX
         window.scrollTo(0, 0);
     }
 
-    // ฟังก์ชันอัปเดตข้อความบนปุ่ม
     function updateSubmitButton() {
         const method = document.querySelector('input[name="payment-method"]:checked').value;
         const btn = document.querySelector('#order-form .btn-main');
@@ -309,7 +326,6 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX
         event.preventDefault(); 
         const method = document.querySelector('input[name="payment-method"]:checked').value;
 
-        // ถ้าเลือกจ่ายตอนรับของ ให้ข้ามหน้าสลิปแล้วส่งออเดอร์เลย
         if (method === 'cod') {
             submitOrder(event, 'cod');
         } else {
@@ -326,11 +342,28 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX
         window.scrollTo(0, 0);
     }
     
+    // 🚩 ส่วนที่ 3: อัปเดตการคำนวณราคา ให้เช็คว่าติ๊กรอบดึกไหม ถ้าใช่บวก 10 บาท
     function calculatePrice() {
         let sizePrice = parseInt(document.querySelector('input[name="size"]:checked').value);
         let quantity = parseInt(document.getElementById('quantity').value);
         if (isNaN(quantity) || quantity < 1) quantity = 1; 
-        document.getElementById('total-price-display').innerText = sizePrice * quantity;
+        
+        let total = sizePrice * quantity;
+
+        // เช็คว่าเลือกรอบดึกไหม
+        const selectedRound = document.querySelector('input[name="delivery-round"]:checked');
+        if (selectedRound && selectedRound.value.includes("รอบดึก")) {
+            total += 10; // บวกค่าจัดส่ง 10 บาท
+        }
+
+        // อัปเดตตัวเลขยอดรวมที่แสดงในหน้าจอ
+        document.getElementById('total-price-display').innerText = total;
+        
+        // อัปเดตตัวเลขยอดชำระในหน้า payment (ถ้าอยู่ในหน้านั้น)
+        const paymentTotalDisplay = document.getElementById('payment-total-display');
+        if (paymentTotalDisplay) {
+            paymentTotalDisplay.innerText = total;
+        }
     }
 
     function previewSlip(event) {
@@ -341,17 +374,16 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX
                 const previewImg = document.getElementById('slip-preview');
                 previewImg.src = e.target.result;
                 previewImg.style.display = 'block';
-                // ตัดเอาเฉพาะเนื้อหา Base64 ไปส่ง
                 slipBase64 = e.target.result.split(',')[1]; 
             }
             reader.readAsDataURL(file);
         }
     }
 
+    // 🚩 ส่วนที่ 4: ดึงข้อมูลรอบส่งใหม่จาก Radio buttons ก่อนส่งออเดอร์
     function submitOrder(event, paymentType = 'transfer') {
         event.preventDefault();
 
-        // ตรวจสอบสลิปเฉพาะกรณีเลือกโอนเงินล่วงหน้า
         if (paymentType === 'transfer' && !slipBase64) {
             alert('⚠️ กรุณาแนบสลิปการโอนเงินก่อนยืนยันออเดอร์นะคะ');
             return;
@@ -372,15 +404,15 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX
         toppingBoxes.forEach(box => { if(box.checked) selectedToppings.push(box.value); });
         let toppingsText = (selectedToppings.length > 0) ? selectedToppings.join(', ') : 'ไม่รับท็อปปิ้งเลย';
         
-        let roundSelect = document.getElementById('delivery-round');
-        let roundText = roundSelect.options[roundSelect.selectedIndex].text;
+        // ดึงค่ารอบเวลาจาก Radio button ที่ลูกค้าติ๊ก
+        const selectedRoundElement = document.querySelector('input[name="delivery-round"]:checked');
+        let roundText = selectedRoundElement ? selectedRoundElement.value : 'ไม่ได้เลือกรอบ';
 
         let selectedSizeVal = document.querySelector('input[name="size"]:checked').value;
         let sizeText = (selectedSizeVal === "39") ? "ไซส์ปกติ (39.-)" : "ไซส์พิเศษ (69.-)";
         
         let paymentText = (paymentType === 'cod') ? "จ่ายเงินตอนรับของ" : "โอนเงิน";
 
-        // รวบรวมข้อมูลทั้งหมด รวมถึงวิธีการชำระเงิน
         const orderData = {
             customerName: document.getElementById('customer-name').value,
             texture: sizeText, 
@@ -390,7 +422,7 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX
             deliveryDate: document.getElementById('delivery-date').value,
             deliveryRound: roundText,
             address: document.getElementById('address').value,
-            paymentMethod: paymentText, // ส่งข้อมูลว่าโอนเงิน หรือ เก็บปลายทาง
+            paymentMethod: paymentText, 
             slipBase64: (paymentType === 'cod') ? "" : slipBase64,
             slipFileName: (paymentType === 'cod') ? "" : "slip_" + document.getElementById('customer-name').value + "_" + new Date().getTime() + ".jpg"
         };
@@ -413,7 +445,6 @@ const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX
         });
     }
 
-    // ฟังก์ชันเสริมสำหรับรีเซ็ตปุ่มเวลามี Error
     function resetSubmitButton(paymentType, btn) {
         if (paymentType === 'cod') {
             btn.innerText = 'ยืนยันออเดอร์ (จ่ายเงินตอนรับของ)';
