@@ -74,7 +74,7 @@
         .checkbox-group { background: var(--bg-color); padding: 15px; border-radius: 10px; border: 1px solid #eee; }
         .checkbox-label { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; }
         .checkbox-label input[type="radio"], .checkbox-label input[type="checkbox"] { width: 20px; height: 20px; margin-right: 10px; flex-shrink: 0; }
-        input[type="text"], input[type="date"], input[type="number"], select, textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Prompt'; background-color: white;}
+        input[type="text"], input[type="tel"], input[type="date"], input[type="number"], select, textarea, input[type="file"] { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: 'Prompt'; background-color: white;}
         .total-price-box { background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 10px; text-align: center; font-size: 22px; font-weight: 700; border: 2px dashed #4caf50; margin-bottom: 20px; }
         .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
         .btn-main { display: block; width: 100%; padding: 15px; background-color: #1a53ad; color: white; text-align: center; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
@@ -111,6 +111,10 @@
                 สั่งเลย 😋
             </button>
 
+            <button class="btn-order" onclick="goToStatus()" style="background-color: #f8f9fa; color: #0056b3; border: 2px solid #0056b3; margin-top: 10px;">
+                📦 เช็คสถานะออเดอร์
+            </button>
+
             <div class="logo-footer">
                 <img src="logo.png" alt="Logo">
                 <p style="font-size: 14px; color: #666; margin-top: 10px;">ขอบคุณที่อุดหนุนนะคะ 💖</p>
@@ -126,6 +130,12 @@
             <div class="form-group">
                 <label>ชื่อลูกค้า (ชื่อที่แม่ค้าจำได้ 💖)</label>
                 <input type="text" id="customer-name" placeholder="ระบุชื่อของคุณ" required>
+            </div>
+
+            <div class="form-group">
+                <label>เบอร์โทรศัพท์ (ใช้ค้นหาสถานะ)</label>
+                <input type="tel" id="customer-phone" placeholder="08xxxxxxxx" pattern="[0-9]{10}" required>
+                <small style="color: #666; margin-top: 5px; display: block;">* ข้อมูลนี้ใช้เพื่อเช็คสถานะการจัดส่งในร้านเท่านั้นค่ะ🔒</small>
             </div>
 
             <div class="form-group">
@@ -201,6 +211,22 @@
         </div>
 
         <button type="button" id="submit-btn" class="btn-main" onclick="submitOrder(event, 'transfer')">ยืนยันออเดอร์และส่งสลิป</button>
+    </div>
+
+    <div id="status-page" class="page">
+        <button type="button" style="border:none; background:none; color:#0056b3; cursor:pointer; font-family:'Prompt'; margin-bottom: 15px;" onclick="goToHomeFromStatus()">❮ กลับหน้าหลัก</button>
+        <h1>📦 เช็คสถานะสินค้า</h1>
+        
+        <div style="background: #fff; padding: 20px; border-radius: 15px; border: 1px solid #ddd; text-align: center;">
+            <p style="margin-bottom: 15px;">กรอกเบอร์โทรศัพท์ที่ใช้สั่งซื้อ เพื่อดูสถานะล่าสุดค่ะ</p>
+            <input type="tel" id="search-phone" placeholder="08xxxxxxxx" pattern="[0-9]{10}" style="margin-bottom: 10px; text-align: center;">
+            <small style="color: #666; margin-bottom: 20px; display: block;">* ใช้เพื่อเช็คสถานะการจัดส่ง 🔒</small>
+            
+            <button class="btn-main" onclick="checkStatus()">🔍 ค้นหาสถานะ</button>
+            
+            <div id="status-result" style="margin-top: 20px; padding: 15px; border-radius: 10px; display: none; font-size: 18px; font-weight: bold;">
+                </div>
+        </div>
     </div>
 
 </div>
@@ -405,8 +431,10 @@
         
         let paymentText = (paymentType === 'cod') ? "จ่ายเงินตอนรับของ" : "โอนเงิน";
 
+        // 🟢 เพิ่ม customerPhone ลงใน orderData ที่ส่งไปให้หลังบ้าน
         const orderData = {
             customerName: document.getElementById('customer-name').value,
+            customerPhone: document.getElementById('customer-phone').value, // เพิ่มเบอร์โทรตรงนี้
             texture: sizeText, 
             toppings: toppingsText,
             quantity: document.getElementById('quantity').value,
@@ -444,6 +472,54 @@
             btn.innerText = 'ยืนยันออเดอร์และส่งสลิป';
         }
         btn.disabled = false;
+    }
+
+    // 🟢 ฟังก์ชันสำหรับหน้าเช็คสถานะออเดอร์
+    function goToStatus() {
+        document.getElementById('home-page').classList.remove('active');
+        document.getElementById('status-page').classList.add('active');
+        document.getElementById('status-result').style.display = 'none';
+        document.getElementById('search-phone').value = '';
+        window.scrollTo(0, 0);
+    }
+
+    function goToHomeFromStatus() {
+        document.getElementById('status-page').classList.remove('active');
+        document.getElementById('home-page').classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    function checkStatus() {
+        const searchPhone = document.getElementById('search-phone').value.trim();
+        const resultBox = document.getElementById('status-result');
+        
+        if(!searchPhone || searchPhone.length < 9) {
+            alert('กรุณากรอกเบอร์โทรศัพท์ให้ถูกต้องนะคะ');
+            return;
+        }
+
+        resultBox.style.display = 'block';
+        resultBox.style.backgroundColor = '#fff3cd';
+        resultBox.style.color = '#856404';
+        resultBox.innerHTML = '⏳ กำลังค้นหาข้อมูล...';
+
+        fetch(scriptUrl + "?action=checkStatus&phone=" + encodeURIComponent(searchPhone))
+        .then(response => response.json())
+        .then(data => {
+            if(data.status === "success") {
+                resultBox.style.backgroundColor = '#e8f5e9';
+                resultBox.style.color = '#2e7d32';
+                resultBox.innerHTML = `คุณ ${data.customerName} <br>🎉 สถานะออเดอร์: <br><span style="font-size:24px; color:#1a53ad;">${data.orderStatus}</span>`;
+            } else {
+                resultBox.style.backgroundColor = '#ffebee';
+                resultBox.style.color = '#c62828';
+                resultBox.innerHTML = '❌ ไม่พบข้อมูลออเดอร์ของเบอร์นี้ค่ะ (ลองตรวจเบอร์ดูนะคะ)';
+            }
+        })
+        .catch(error => {
+            resultBox.innerHTML = '⚠️ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
+            console.error('Error:', error);
+        });
     }
 </script>
 
