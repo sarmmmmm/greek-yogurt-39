@@ -78,6 +78,9 @@
         .total-price-box { background-color: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 10px; text-align: center; font-size: 22px; font-weight: 700; border: 2px dashed #4caf50; margin-bottom: 20px; }
         .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; }
         .btn-main { display: block; width: 100%; padding: 15px; background-color: #1a53ad; color: white; text-align: center; border: none; border-radius: 10px; font-size: 18px; font-weight: 600; cursor: pointer; }
+        
+        .item-section { background: #fff; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .item-section-title { font-weight: 700; color: #1e293b; margin-bottom: 12px; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
@@ -91,7 +94,7 @@
     <div id="home-page" class="page">
         <div class="home-content">
             <h1>🍯 ร้านกรีกโยเกิร์ตโฮมเมด</h1>
-            <div class="price-tag">เริ่มต้นเพียง 39 บาท!</div>
+            <div class="price-tag">เริ่มต้นเพียง 30 บาท!</div>
 
             <div id="stock-status" class="status-badge available">
                 ✅ วันนี้เปิดร้านนะคะ 🍯✨
@@ -138,27 +141,42 @@
                 <small style="color: #666; margin-top: 5px; display: block;">* ข้อมูลนี้ใช้เพื่อเช็คสถานะการจัดส่งในร้านเท่านั้นค่ะ🔒</small>
             </div>
 
-            <div class="form-group">
-                <label>เลือกขนาด (Size)</label>
-                <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="radio" name="size" value="39" onchange="calculatePrice()" checked> ไซส์ปกติ (39 บาท)</label>
-                    <label class="checkbox-label"><input type="radio" name="size" value="69" onchange="calculatePrice()"> ไซส์พิเศษ จุกๆ (69 บาท)</label>
+            <div class="item-section" style="border-left: 5px solid #0056b3;">
+                <div class="item-section-title">
+                    <span>🥣 ไซส์ปกติ (1 ลูก)</span>
+                    <span id="price-regular-label" style="color:#0056b3;">30.- / ถ้วย</span>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label style="font-size:14px; color:#555;">จำนวนที่สั่ง (ถ้วย) *ใส่ 0 หากไม่รับไซส์นี้</label>
+                    <input type="number" id="qty-regular" value="1" min="0" oninput="calculatePrice(); updateDeliveryRounds();" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size:14px; color:#555;">เลือกท็อปปิ้งฟรี (แครกเกอร์/กล้วย ปรับเป็น 39.-)</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" class="topping-regular" value="น้ำผึ้ง" onchange="calculatePrice()" checked> น้ำผึ้ง (ฟรี 🍯)</label>
+                        <label class="checkbox-label"><input type="checkbox" class="topping-regular" value="แครกเกอร์" onchange="calculatePrice()"> แครกเกอร์ (เพิ่มสัมผัสกรุบกรอบ 🍪)</label>
+                        <label class="checkbox-label"><input type="checkbox" class="topping-regular" value="กล้วย" onchange="calculatePrice()"> กล้วยหอมสด 🍌</label>
+                    </div>
                 </div>
             </div>
 
-           <div class="form-group">
-                <label>เลือกท็อปปิ้ง (ฟรีทุกอย่างในราคาเดียว!)</label>
-                <div class="checkbox-group">
-                    <label class="checkbox-label"><input type="checkbox" class="topping" value="น้ำผึ้ง" checked> น้ำผึ้ง</label>
-                    <label class="checkbox-label"><input type="checkbox" class="topping" value="แครกเกอร์" checked> แครกเกอร์</label>
-                    <label class="checkbox-label"><input type="checkbox" class="topping" value="กล้วย" checked> กล้วย</label>
+            <div class="item-section" style="border-left: 5px solid #ffc107;">
+                <div class="item-section-title">
+                    <span>👑 ไซส์พิเศษ จุกๆ</span>
+                    <span style="color:#b38600;">69.- / ถ้วย</span>
                 </div>
-                <small style="color: #666; margin-top: 5px; display: block;">* ติ๊กเลือกใส่ได้ตามใจชอบเลยค่ะ ราคาเดียวคุ้มๆ!</small>
-            </div>
-
-            <div class="form-group">
-                <label>จำนวนที่สั่ง (ถ้วย)</label>
-                <input type="number" id="quantity" value="1" min="1" oninput="calculatePrice(); updateDeliveryRounds();" required>
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label style="font-size:14px; color:#555;">จำนวนที่สั่ง (ถ้วย) *ใส่ 0 หากไม่รับไซส์นี้</label>
+                    <input type="number" id="qty-special" value="0" min="0" oninput="calculatePrice(); updateDeliveryRounds();" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size:14px; color:#555;">เลือกท็อปปิ้งสำหรับไซส์พิเศษ</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-label"><input type="checkbox" class="topping-special" value="น้ำผึ้ง" checked> น้ำผึ้ง 🍯</label>
+                        <label class="checkbox-label"><input type="checkbox" class="topping-special" value="แครกเกอร์" checked> แครกเกอร์ 🍪</label>
+                        <label class="checkbox-label"><input type="checkbox" class="topping-special" value="กล้วย" checked> กล้วยหอมสด 🍌</label>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -186,7 +204,7 @@
                 </div>
             </div>
 
-            <div class="total-price-box">ยอดรวม: <span id="total-price-display">39</span> บาท</div>
+            <div class="total-price-box">ยอดรวมทั้งหมด: <span id="total-price-display">39</span> บาท</div>
 
             <button type="submit" class="btn-main">ดำเนินการชำระเงิน</button>
         </form>
@@ -277,9 +295,11 @@
 
     function updateDeliveryRounds() {
         const selectedDate = document.getElementById('delivery-date').value; 
-        const qtyWanted = parseInt(document.getElementById('quantity').value) || 1;
-        const roundContainer = document.getElementById('delivery-round-container');
+        const qtyRegular = parseInt(document.getElementById('qty-regular').value) || 0;
+        const qtySpecial = parseInt(document.getElementById('qty-special').value) || 0;
+        const qtyWanted = qtyRegular + qtySpecial; // ยอดสั่งรวม 2 ไซส์
         
+        const roundContainer = document.getElementById('delivery-round-container');
         roundContainer.innerHTML = '<p style="color: #666; margin: 0; font-size: 14px;">⏳ กำลังเช็คโควตา...</p>';
 
         if (!selectedDate) {
@@ -294,21 +314,25 @@
                 roundContainer.innerHTML = '<p style="color: #c62828; margin: 0; font-weight: bold;">❌ สินค้าหมดชั่วคราว</p>';
             } else if (dayConfig.quota > 0 && (dayConfig.booked + qtyWanted) > dayConfig.quota) {
                 const remaining = dayConfig.quota - dayConfig.booked;
-                roundContainer.innerHTML = `<p style="color: #c62828; margin: 0; font-weight: bold;">❌ รับได้อีกแค่ ${remaining} ถ้วยค่ะ</p>`;
+                roundContainer.innerHTML = `<p style="color: #c62828; margin: 0; font-weight: bold;">❌ คิวเต็ม! รับได้อีกแค่ ${remaining} ถ้วยค่ะ (ขณะนี้ระบุไว้ ${qtyWanted} ถ้วย)</p>`;
             } else {
                 roundContainer.innerHTML = ''; 
                 let hasRound = false;
+                const checkedRound = document.querySelector('input[name="delivery-round"]:checked')?.value;
                 
                 if (dayConfig.morning) { 
-                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบเช้า (09:00)" onchange="calculatePrice()" required> รอบเช้า (09:00)</label>`; 
+                    const isChecked = checkedRound === "รอบเช้า (09:00)" ? "checked" : "";
+                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบเช้า (09:00)" onchange="calculatePrice()" required ${isChecked}> รอบเช้า (09:00)</label>`; 
                     hasRound = true; 
                 }
                 if (dayConfig.afternoon) { 
-                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบบ่าย (13:00)" onchange="calculatePrice()" required> รอบบ่าย (13:00)</label>`; 
+                    const isChecked = checkedRound === "รอบบ่าย (13:00)" ? "checked" : "";
+                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบบ่าย (13:00)" onchange="calculatePrice()" required ${isChecked}> รอบบ่าย (13:00)</label>`; 
                     hasRound = true; 
                 }
                 if (dayConfig.night) {
-                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบดึก (หลัง 18:00)" onchange="calculatePrice()" required> รอบดึกหลัง 18.00 (บวกค่าส่ง 10.-)</label>`;
+                    const isChecked = checkedRound === "รอบดึก (หลัง 18:00)" ? "checked" : "";
+                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบดึก (หลัง 18:00)" onchange="calculatePrice()" required ${isChecked}> รอบดึกหลัง 18.00 (บวกค่าส่ง 10.-)</label>`;
                     hasRound = true;
                 }
 
@@ -348,6 +372,15 @@
 
     function goToPayment(event) {
         event.preventDefault(); 
+        
+        const qtyRegular = parseInt(document.getElementById('qty-regular').value) || 0;
+        const qtySpecial = parseInt(document.getElementById('qty-special').value) || 0;
+        
+        if (qtyRegular === 0 && qtySpecial === 0) {
+            alert('⚠️ กรุณากรอกจำนวนสินค้าอย่างน้อย 1 รายการก่อนค่ะ');
+            return;
+        }
+
         const method = document.querySelector('input[name="payment-method"]:checked').value;
 
         if (method === 'cod') {
@@ -367,12 +400,35 @@
     }
     
     function calculatePrice() {
-        let sizePrice = parseInt(document.querySelector('input[name="size"]:checked').value);
-        let quantity = parseInt(document.getElementById('quantity').value);
-        if (isNaN(quantity) || quantity < 1) quantity = 1; 
+        // 1. คำนวณไซส์ปกติ (คิดเงื่อนไข 30 หรือ 39 บาทจากท็อปปิ้ง)
+        const qtyRegular = parseInt(document.getElementById('qty-regular').value) || 0;
+        let priceRegularUnit = 30; // ราคาตั้งต้นกรีกโยเกิร์ตเปล่าๆ
         
-        let total = sizePrice * quantity;
+        const toppingRegularBoxes = document.querySelectorAll('.topping-regular');
+        let hasPremiumTopping = false;
+        toppingRegularBoxes.forEach(box => {
+            // ถ้าเลือกแครกเกอร์ หรือ กล้วย จะปรับราคาเป็น 39.-
+            if (box.checked && (box.value === 'แครกเกอร์' || box.value === 'กล้วย')) {
+                hasPremiumTopping = true;
+            }
+        });
+        
+        if (hasPremiumTopping) {
+            priceRegularUnit = 39;
+            document.getElementById('price-regular-label').innerText = "39.- / ถ้วย";
+        } else {
+            document.getElementById('price-regular-label').innerText = "30.- / ถ้วย";
+        }
+        let totalRegular = priceRegularUnit * qtyRegular;
 
+        // 2. คำนวณไซส์พิเศษ (69 บาทคงเดิม)
+        const qtySpecial = parseInt(document.getElementById('qty-special').value) || 0;
+        let totalSpecial = 69 * qtySpecial;
+
+        // 3. รวมยอด
+        let total = totalRegular + totalSpecial;
+
+        // บวกค่ารอบดึก
         const selectedRound = document.querySelector('input[name="delivery-round"]:checked');
         if (selectedRound && selectedRound.value.includes("รอบดึก")) {
             total += 10; 
@@ -408,6 +464,14 @@
             return;
         }
         
+        const qtyRegular = parseInt(document.getElementById('qty-regular').value) || 0;
+        const qtySpecial = parseInt(document.getElementById('qty-special').value) || 0;
+        
+        if (qtyRegular === 0 && qtySpecial === 0) {
+            alert('⚠️ กรุณากรอกจำนวนสินค้าอย่างน้อย 1 รายการก่อนส่งข้อมูลค่ะ');
+            return;
+        }
+        
         let submitBtn;
         if (paymentType === 'cod') {
             submitBtn = document.querySelector('#order-form .btn-main');
@@ -418,33 +482,55 @@
         }
         submitBtn.disabled = true;
 
-        const toppingBoxes = document.querySelectorAll('.topping');
-        let selectedToppings = [];
-        toppingBoxes.forEach(box => { if(box.checked) selectedToppings.push(box.value); });
-        let toppingsText = (selectedToppings.length > 0) ? selectedToppings.join(', ') : 'ไม่รับท็อปปิ้งเลย';
+        // 🟢 จัดเตรียมแพ็กเก็ตอาร์เรย์สินค้า (แยกแถวตามไซส์)
+        let itemsArray = [];
+
+        // เพิ่มรายการไซส์ปกติ (ถ้าสั่งมากกว่า 0)
+        if (qtyRegular > 0) {
+            let priceRegularUnit = 30;
+            let selectedToppingsRegular = [];
+            document.querySelectorAll('.topping-regular').forEach(box => {
+                if (box.checked) {
+                    selectedToppingsRegular.push(box.value);
+                    if (box.value === 'แครกเกอร์' || box.value === 'กล้วย') priceRegularUnit = 39;
+                }
+            });
+            itemsArray.push({
+                texture: `ไซส์ปกติ (${priceRegularUnit}.-)`,
+                toppings: (selectedToppingsRegular.length > 0) ? selectedToppingsRegular.join(', ') : 'ไม่รับท็อปปิ้ง',
+                quantity: qtyRegular,
+                totalPrice: priceRegularUnit * qtyRegular
+            });
+        }
+
+        // เพิ่มรายการไซส์พิเศษ (ถ้าสั่งมากกว่า 0)
+        if (qtySpecial > 0) {
+            let selectedToppingsSpecial = [];
+            document.querySelectorAll('.topping-special').forEach(box => {
+                if (box.checked) selectedToppingsSpecial.push(box.value);
+            });
+            itemsArray.push({
+                texture: "ไซส์พิเศษ (69.-)",
+                toppings: (selectedToppingsSpecial.length > 0) ? selectedToppingsSpecial.join(', ') : 'ไม่รับท็อปปิ้ง',
+                quantity: qtySpecial,
+                totalPrice: 69 * qtySpecial
+            });
+        }
         
         const selectedRoundElement = document.querySelector('input[name="delivery-round"]:checked');
         let roundText = selectedRoundElement ? selectedRoundElement.value : 'ไม่ได้เลือกรอบ';
-
-        let selectedSizeVal = document.querySelector('input[name="size"]:checked').value;
-        let sizeText = (selectedSizeVal === "39") ? "ไซส์ปกติ (39.-)" : "ไซส์พิเศษ (69.-)";
-        
         let paymentText = (paymentType === 'cod') ? "จ่ายเงินตอนรับของ" : "โอนเงิน";
 
-        // 🟢 เพิ่ม customerPhone ลงใน orderData ที่ส่งไปให้หลังบ้าน
         const orderData = {
             customerName: document.getElementById('customer-name').value,
-            customerPhone: document.getElementById('customer-phone').value, // เพิ่มเบอร์โทรตรงนี้
-            texture: sizeText, 
-            toppings: toppingsText,
-            quantity: document.getElementById('quantity').value,
-            totalPrice: document.getElementById('total-price-display').innerText,
+            customerPhone: document.getElementById('customer-phone').value,
             deliveryDate: document.getElementById('delivery-date').value,
             deliveryRound: roundText,
             address: document.getElementById('address').value,
             paymentMethod: paymentText, 
             slipBase64: (paymentType === 'cod') ? "" : slipBase64,
-            slipFileName: (paymentType === 'cod') ? "" : "slip_" + document.getElementById('customer-name').value + "_" + new Date().getTime() + ".jpg"
+            slipFileName: (paymentType === 'cod') ? "" : "slip_" + document.getElementById('customer-name').value + "_" + new Date().getTime() + ".jpg",
+            items: itemsArray // ส่งแบบรายการอาเรย์เพื่อไปแตกแถวหลังบ้าน
         };
 
         fetch(scriptUrl, { method: 'POST', body: JSON.stringify(orderData) })
@@ -474,7 +560,6 @@
         btn.disabled = false;
     }
 
-    // 🟢 ฟังก์ชันสำหรับหน้าเช็คสถานะออเดอร์
     function goToStatus() {
         document.getElementById('home-page').classList.remove('active');
         document.getElementById('status-page').classList.add('active');
@@ -509,7 +594,7 @@
             if(data.status === "success") {
                 resultBox.style.backgroundColor = '#e8f5e9';
                 resultBox.style.color = '#2e7d32';
-                resultBox.innerHTML = `คุณ ${data.customerName} <br>🎉 สถานะออเดอร์: <br><span style="font-size:24px; color:#1a53ad;">${data.orderStatus}</span>`;
+                resultBox.innerHTML = `คุณ ${data.customerName} <br>🎉 สถานะออเดอร์ล่าสุด: <br><span style="font-size:24px; color:#1a53ad;">${data.orderStatus}</span>`;
             } else {
                 resultBox.style.backgroundColor = '#ffebee';
                 resultBox.style.color = '#c62828';
