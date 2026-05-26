@@ -276,30 +276,56 @@
     let cart = [];
     let currentSelectedSize = "";
 
-    function initApp() {
+   function initApp() {
         fetch(scriptUrl)
         .then(response => response.json())
         .then(config => {
-            isStockAvailable = config.isStockAvailable;
             shopSchedule = config.schedule; 
+            
+            // 🟢 เพิ่มลอจิกเช็คว่ามีวันเปิดร้าน (ที่คิวยังไม่เต็ม) หรือไม่
+            let hasAvailableDay = false;
+            let today = new Date();
+            today.setHours(0, 0, 0, 0); // รีเซ็ตเวลาเป็นเที่ยงคืนเพื่อเทียบแค่วันที่
+
+            for (let dateKey in shopSchedule) {
+                let checkDate = new Date(dateKey);
+                let dayData = shopSchedule[dateKey];
+                
+                // ถ้ารอบส่งเป็นวันนี้หรือวันในอนาคต และมีการเปิดรอบส่งอย่างน้อย 1 รอบ
+                if (checkDate >= today && (dayData.morning || dayData.afternoon || dayData.night)) {
+                    // และโควตายังไม่เต็ม (หรือไม่ได้ตั้งโควตาไว้คือ 0)
+                    if (dayData.quota === 0 || dayData.booked < dayData.quota) {
+                        hasAvailableDay = true;
+                        break; // เจอแค่วันเดียวที่ว่าง ก็ถือว่าร้านเปิดรับออเดอร์
+                    }
+                }
+            }
+
+            // นำผลลัพธ์ไปกำหนดสถานะร้าน
+            isStockAvailable = hasAvailableDay; 
+
             const statusBox = document.getElementById('stock-status');
             const mainOrderBtn = document.getElementById('main-order-btn'); 
 
             if (!isStockAvailable) {
+                // กรณีไม่มีวันส่งของเลย หรือคิวเต็มหมดแล้ว
                 statusBox.className = 'status-badge sold-out';
-                statusBox.innerHTML = '❌ สินค้าหมดชั่วคราว (รอรอบหน้านะคะ)';
+                statusBox.innerHTML = '❌ ปิดรับออเดอร์ / คิวเต็มหมดแล้วค่ะ';
                 mainOrderBtn.innerText = 'ปิดรับออเดอร์ชั่วคราว';
                 mainOrderBtn.disabled = true; 
             } else {
+                // กรณีมีวันส่งของให้เลือก
+                statusBox.className = 'status-badge available';
+                statusBox.innerHTML = '✅ วันนี้เปิดร้านนะคะ 🍯✨';
                 mainOrderBtn.disabled = false; 
             }
+            
             document.getElementById('loading-screen').style.display = 'none';
             goToPage('home-page');
         }).catch(err => {
             document.getElementById('loading-screen').innerHTML = '⚠️ โหลดข้อมูลไม่สำเร็จ';
         });
     }
-
     initApp();
 
     // ระบบนำทางระหว่างหน้า
