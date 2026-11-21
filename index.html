@@ -655,9 +655,15 @@
                 <div><label>จากวันที่</label><input type="date" id="sum-from"></div>
                 <div><label>ถึงวันที่</label><input type="date" id="sum-to"></div>
             </div>
-            <div style="margin-bottom:10px;">
-                <label>สถานที่</label>
-                <select id="sum-place"><option value="">ทุกสถานที่</option></select>
+            <div class="row2" style="margin-bottom:10px;">
+                <div><label>ช่องทางขาย</label>
+                    <select id="sum-channel" onchange="posSumReRender()">
+                        <option value="pos">หน้าบูท</option>
+                        <option value="web">ออนไลน์</option>
+                        <option value="all">ทั้งหมด</option>
+                    </select></div>
+                <div><label>สถานที่ (หน้าบูท)</label>
+                    <select id="sum-place" onchange="posSumReRender()"><option value="">ทุกสถานที่</option></select></div>
             </div>
             <button type="button" class="sum-go" onclick="posSumLoad()">📊 ดูสรุป</button>
         </div>
@@ -1167,7 +1173,7 @@
        - 3 แท็บ: ขาย / คิวงาน / สรุปผู้บริหาร
        =================================================================== */
 
-    const APP_VERSION = '2026-11-22b';   // แสดงที่แถบบนของโหมดหน้าบูท ใช้เช็คว่าอัปไฟล์ใหม่ขึ้นเว็บแล้วหรือยัง
+    const APP_VERSION = '2026-11-22c';   // แสดงที่แถบบนของโหมดหน้าบูท ใช้เช็คว่าอัปไฟล์ใหม่ขึ้นเว็บแล้วหรือยัง
     const POS_PIN = '008493';
     const POS_K = {
         unlocked:'gy_pos_unlocked', session:'gy_pos_session', queue:'gy_pos_queue',
@@ -1214,6 +1220,7 @@
     let posPayPickId = null;    // ออเดอร์ที่กำลังเลือกวิธีจ่ายเงินอยู่
     let posShowDone = false;    // แสดงรายการที่เสร็จแล้วหรือไม่
     let posSumData = null;      // ออเดอร์ที่ดึงมาให้หน้าสรุป
+    let posSumRange = null;     // ช่วงวันที่ของข้อมูลชุดที่ดึงมา
 
     /* ---------- ตัวช่วย ---------- */
     function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
@@ -1559,7 +1566,8 @@
 
         // 3) แยกคิวที่ยังค้าง กับที่เสร็จแล้ว (จ่ายแล้ว + รับแล้ว)
         const numbered = orders.map((o,i) => ({ o:o, no:i+1 }));
-        const isDone = x => !x.o.cancelled && x.o.recv === 'yes' && x.o.pay !== 'unpaid';
+        // บิลที่ "ยกเลิก" หรือ "จ่ายแล้ว + รับแล้ว" ถือว่าจบ -> ย้ายไปอยู่ในส่วนที่ซ่อนไว้
+        const isDone = x => x.o.cancelled || (x.o.recv === 'yes' && x.o.pay !== 'unpaid');
         const pending = numbered.filter(x => !isDone(x)).reverse();
         const done = numbered.filter(isDone).reverse();
 
@@ -1570,7 +1578,9 @@
         const tg = document.getElementById('done-toggle');
         if (done.length){
             tg.style.display = 'block';
-            tg.innerText = (posShowDone ? '▲ ซ่อน' : '▼ แสดง') + 'รายการที่เสร็จแล้ว (' + done.length + ')';
+            const nCancel = done.filter(x => x.o.cancelled).length;
+            tg.innerText = (posShowDone ? '▲ ซ่อน' : '▼ แสดง') + 'รายการที่จบแล้ว (' + done.length + ')' +
+                           (nCancel ? ' · ยกเลิก ' + nCancel : '');
         } else tg.style.display = 'none';
         document.getElementById('queue-done-list').innerHTML =
             (posShowDone && done.length) ? done.map(x => orderCard(x.o, x.no)).join('') : '';
@@ -1774,6 +1784,7 @@
         const cur = sel.value;
         let places = jsonGet(POS_K.places, []).slice();
         posOrdersGet().forEach(o => { if (o.place && places.indexOf(o.place) === -1) places.push(o.place); });
+        // ชื่อสถานที่มาจากออเดอร์หน้าบูทเท่านั้น (ออนไลน์ใช้ช่องที่อยู่เป็นที่อยู่ลูกค้า)
         (extra||[]).forEach(p => { if (p && places.indexOf(p) === -1) places.push(p); });
         sel.innerHTML = '<option value="">ทุกสถานที่</option>' +
             places.map(p => '<option value="' + esc(p) + '">' + esc(p) + '</option>').join('');
@@ -1798,19 +1809,23 @@
         if (to < from){ alert('วันที่สิ้นสุดต้องไม่น้อยกว่าวันที่เริ่มค่ะ'); return; }
         document.getElementById('sum-body').innerHTML = '<div class="sum-empty">⏳ กำลังดึงข้อมูล...</div>';
 
-        fetch(scriptUrl + '?action=posOrders&from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to))
+        // include=all -> ดึงทั้งออเดอร์หน้าบูทและออนไลน์มาเทียบกัน
+        fetch(scriptUrl + '?action=posOrders&include=all&from=' + encodeURIComponent(from) + '&to=' + encodeURIComponent(to))
         .then(r => r.json())
         .then(d => {
             let list = (d && d.status === 'success' && d.orders) ? d.orders.slice() : [];
+            list.forEach(o => { if (!o.channel) o.channel = 'pos'; });
             // รวมออเดอร์ในเครื่องที่ยังส่งไม่ถึงชีต เพื่อให้ยอดวันนี้ไม่ขาด
             posOrdersGet().forEach(o => {
                 if (o.date < from || o.date > to) return;
                 if (list.some(x => x.orderId === o.orderId)) return;
                 list.push({ orderId:o.orderId, ts:o.ts, name:o.name, phone:o.phone, pay:o.pay,
-                            recv:o.recv, cancelled:o.cancelled, items:o.items, total:o.total, place:o.place, date:o.date });
+                            recv:o.recv, cancelled:o.cancelled, items:o.items, total:o.total,
+                            place:o.place, date:o.date, channel:'pos' });
             });
             posSumData = list;
-            posSumFillPlaces(list.map(o => o.place));
+            posSumRange = { from:from, to:to };
+            posSumFillPlaces(list.filter(o => o.channel === 'pos').map(o => o.place));
             posSumRender(from, to);
         })
         .catch(() => {
@@ -1819,16 +1834,58 @@
         });
     }
 
+    // เปลี่ยนช่องทาง/สถานที่ แล้วคำนวณใหม่จากข้อมูลชุดเดิม (ไม่ต้องยิงเซิร์ฟเวอร์ซ้ำ)
+    function posSumReRender(){
+        if (!posSumData || !posSumRange){ return; }
+        const ch = document.getElementById('sum-channel').value;
+        document.getElementById('sum-place').disabled = (ch === 'web');
+        posSumRender(posSumRange.from, posSumRange.to);
+    }
+
     function posSumRender(from, to){
         const place = document.getElementById('sum-place').value;
-        let all = (posSumData || []).filter(o => !place || o.place === place);
-        const cancelled = all.filter(o => o.cancelled);
-        const orders = all.filter(o => !o.cancelled);
+        const chSel = document.getElementById('sum-channel').value || 'pos';
         const body = document.getElementById('sum-body');
 
+        // ----- เทียบช่องทางขาย (ใช้ข้อมูลทั้งหมด ไม่กรองช่องทาง) -----
+        const everything = (posSumData || []).filter(o => !o.cancelled);
+        const chStat = k => {
+            const g = everything.filter(o => o.channel === k);
+            const cups = g.reduce((s,o) => s + (o.items||[]).reduce((a,b)=>a+(Number(b.quantity)||0),0), 0);
+            const baht = g.reduce((s,o)=>s+o.total,0);
+            return { bills:g.length, cups:cups, baht:baht, aov: g.length ? Math.round(baht/g.length) : 0 };
+        };
+        const cPos = chStat('pos'), cWeb = chStat('web');
+        const grand = cPos.baht + cWeb.baht;
+
+        // ----- ชุดข้อมูลที่ใช้คำนวณส่วนที่เหลือ -----
+        let all = (posSumData || []).filter(o => chSel === 'all' || o.channel === chSel);
+        if (chSel !== 'web') all = all.filter(o => !place || o.channel !== 'pos' || o.place === place);
+        const cancelled = all.filter(o => o.cancelled);
+        const orders = all.filter(o => !o.cancelled);
+
+        const CH_LABEL = { pos:'หน้าบูท', web:'ออนไลน์', all:'ทุกช่องทาง' };
+        const channelCard =
+            '<div class="pos-card"><div class="h">🛒 เทียบช่องทางขาย</div>' +
+            [['หน้าบูท',cPos,'t'],['ออนไลน์',cWeb,'']].map(x => {
+                const c = x[1], pct = grand ? Math.round(c.baht/grand*100) : 0;
+                return '<div class="bar-row"><div class="t"><span><b>' + x[0] + '</b><small>' + c.bills + ' บิล · ' + c.cups + ' ถ้วย · เฉลี่ย ' + money(c.aov) + ' ฿/บิล</small></span>' +
+                    '<span style="text-align:right;"><b>' + money(c.baht) + ' ฿</b><small>' + pct + '%</small></span></div>' +
+                    '<div class="bar-track"><div class="bar-fill ' + x[2] + '" style="width:' + pct + '%"></div></div></div>';
+            }).join('') +
+            '<div style="display:flex;justify-content:space-between;border-top:2px solid #0f172a;margin-top:8px;padding-top:9px;font-size:16px;font-weight:700;">' +
+            '<span>รวมทุกช่องทาง</span><span>' + money(grand) + ' ฿</span></div>' +
+            (cPos.baht && cWeb.baht
+              ? '<div style="font-size:12.5px;color:#64748b;margin-top:8px;line-height:1.7;">ต่างกัน <b>' + money(Math.abs(cPos.baht-cWeb.baht)) + ' ฿</b> — ' +
+                (cPos.baht >= cWeb.baht ? 'หน้าบูททำเงินมากกว่าออนไลน์' : 'ออนไลน์ทำเงินมากกว่าหน้าบูท') +
+                ' ' + (Math.min(cPos.baht,cWeb.baht) ? (Math.max(cPos.baht,cWeb.baht)/Math.min(cPos.baht,cWeb.baht)).toFixed(1) + ' เท่า' : '') + '</div>'
+              : '') +
+            '<div style="font-size:11.5px;color:#94a3b8;margin-top:6px;">นับตาม "วันที่รับของ" ทั้งสองช่องทาง</div></div>';
+
         if (!orders.length && !cancelled.length){
-            body.innerHTML = '<div class="sum-empty">ไม่พบออเดอร์หน้าบูทในช่วงที่เลือก<br>' +
-                '<span style="font-size:12px;">ลองขยายช่วงวันที่ หรือเลือก "ทุกสถานที่"</span></div>';
+            body.innerHTML = channelCard +
+                '<div class="sum-empty">ไม่พบออเดอร์' + CH_LABEL[chSel] + 'ในช่วงที่เลือก<br>' +
+                '<span style="font-size:12px;">ลองขยายช่วงวันที่ เปลี่ยนช่องทาง หรือเลือก "ทุกสถานที่"</span></div>';
             return;
         }
 
@@ -1883,9 +1940,11 @@
         const dayKeys = Object.keys(byDay).sort();
         const maxDay = dayKeys.length ? Math.max.apply(null, dayKeys.map(d=>byDay[d].baht)) : 1;
 
-        let h = '';
+        let h = channelCard;
 
         // ===== KPI =====
+        h += '<div style="font-size:15px;font-weight:700;color:#0f172a;margin:16px 0 10px;">📊 รายละเอียด: ' + CH_LABEL[chSel] +
+             (chSel !== 'web' && place ? ' · ' + esc(place) : '') + '</div>';
         h += '<div class="kpi-grid">' +
             '<div class="kpi wide"><div class="k">ยอดขายรวม' + (days>1 ? ' (' + days + ' วัน)' : '') + '</div>' +
             '<div class="v">' + money(baht) + '<small> ฿</small></div>' +
