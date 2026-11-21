@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ร้านกรีกโยเกิร์ต 39 บาท</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://script.google.com">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #0056b3; 
@@ -76,6 +78,55 @@
         /* Cart Item Actions */
         .qty-btn { background: #eee; border: 1px solid #ddd; border-radius: 5px; width: 30px; height: 30px; cursor: pointer; font-weight: bold; }
         .remove-btn { color: #dc3545; background: none; border: none; cursor: pointer; font-size: 14px; font-weight: bold; }
+
+        /* ===================================================================
+           🔒 โหมดหน้าบูท (Admin / POS)  — เพิ่ม 2026-11-21
+           ส่วนนี้ลูกค้าออนไลน์ไม่เห็นเลย เข้าได้ทาง #pos หรือแตะหัวข้อ 5 ครั้ง
+           =================================================================== */
+        .pos-bar { display: flex; justify-content: space-between; align-items: center; background: #0f172a; color: #fff; padding: 10px 12px; border-radius: 12px; font-size: 13px; margin-bottom: 12px; }
+        .pos-bar b { font-size: 14px; }
+        .pos-bar button { background: #334155; color: #fff; border: none; border-radius: 8px; padding: 6px 10px; font-family: 'Prompt'; font-size: 12px; cursor: pointer; }
+        .pos-queue { font-weight: 700; }
+        .pos-queue.pending { color: #ffc107; }
+        .pos-queue.clear { color: #4ade80; }
+
+        .pos-total { background: #0f172a; color: #fff; border-radius: 14px; padding: 14px; text-align: center; margin-bottom: 12px; }
+        .pos-total .num { font-size: 42px; font-weight: 700; line-height: 1.1; }
+        .pos-total .lbl { font-size: 13px; opacity: 0.75; }
+
+        .pos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .pos-btn { padding: 16px 8px; border: none; border-radius: 14px; color: #fff; font-family: 'Prompt'; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.12); line-height: 1.25; }
+        .pos-btn small { display: block; font-size: 11px; font-weight: 400; opacity: 0.85; margin-top: 2px; }
+        .pos-btn:active { transform: scale(0.97); }
+        .pos-btn.wide { grid-column: 1 / -1; }
+        .pos-btn.clearbtn { background: #e2e8f0; color: #475569; box-shadow: none; font-size: 14px; padding: 10px; }
+
+        .pos-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px dashed #e2e8f0; }
+        .pos-line-name { font-size: 14px; font-weight: 600; }
+        .pos-line-name small { display: block; font-weight: 400; color: #64748b; font-size: 11px; }
+        .pos-line-right { display: flex; align-items: center; gap: 8px; }
+        .pos-line-right .amt { min-width: 52px; text-align: right; font-weight: 700; }
+
+        .pos-pay { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+        .pos-pay button { padding: 20px 8px; border: none; border-radius: 14px; color: #fff; font-family: 'Prompt'; font-size: 19px; font-weight: 700; cursor: pointer; }
+        .pos-pay .cash { background: #16a34a; }
+        .pos-pay .tfer { background: #0056b3; }
+        .pos-pay button:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+        .pos-recap { margin-top: 18px; background: var(--bg-color); border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px; font-size: 13px; color: #334155; }
+        .pos-recap .row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .pos-recap .big { font-size: 17px; font-weight: 700; color: #0f172a; }
+
+        /* แป้นกด PIN */
+        .pin-dots { text-align: center; font-size: 30px; letter-spacing: 10px; margin: 18px 0; min-height: 40px; color: #0f172a; }
+        .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .pin-pad button { padding: 18px 0; font-size: 22px; font-family: 'Prompt'; font-weight: 600; border: 1px solid #e2e8f0; background: #fff; border-radius: 12px; cursor: pointer; }
+        .pin-pad button:active { background: #e2e8f0; }
+        .pin-pad button.alt { font-size: 15px; background: var(--bg-color); }
+
+        .pos-chip { display: inline-block; background: #e8f0fe; color: #0056b3; border: 1px solid #c7dbfa; border-radius: 20px; padding: 6px 12px; font-size: 13px; margin: 4px 4px 0 0; cursor: pointer; }
+
+        .pos-toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 24px; background: #0f172a; color: #fff; padding: 12px 20px; border-radius: 30px; font-size: 15px; font-weight: 600; z-index: 2000; display: none; box-shadow: 0 6px 16px rgba(0,0,0,0.25); }
     </style>
 </head>
 <body>
@@ -86,16 +137,19 @@
 </div>
 
 <div id="cart-float-btn" class="cart-floating-btn" style="display: none;" onclick="goToCartPage()">
-    <i class="fas fa-shopping-cart"></i>
+    <span>🛒</span>
     <div id="cart-badge-count" class="cart-badge">0</div>
 </div>
 
 <div class="container">
     <div id="home-page" class="page">
         <div class="home-content">
-            <h1>🍯 ร้านกรีกโยเกิร์ตโฮมเมด</h1>
+            <h1 id="home-title" onclick="secretTap()">🍯 ร้านกรีกโยเกิร์ตโฮมเมด</h1>
             <div class="price-tag">เริ่มต้นเพียง 30 บาท!</div>
             <div id="stock-status" class="status-badge available">✅ วันนี้เปิดร้านนะคะ 🍯✨</div>
+            <div id="stale-warning" style="display:none; background:#fff3cd; color:#856404; padding:10px; border-radius:10px; font-size:14px; margin-bottom:15px;">
+                📶 อินเทอร์เน็ตมีปัญหา กำลังแสดงข้อมูลที่บันทึกไว้ล่าสุด รอบส่งอาจไม่ตรงปัจจุบันค่ะ
+            </div>
             <div class="product-grid">
                 <div class="product-item"><img src="39.jpg" alt="สินค้า 1"></div>
                 <div class="product-item"><img src="69.jpg" alt="สินค้า 2"></div>
@@ -263,12 +317,103 @@
             <div id="status-result" style="margin-top: 20px; padding: 15px; border-radius: 10px; display: none; font-size: 18px; font-weight: bold;"></div>
         </div>
     </div>
+
+    <!-- ===================================================================
+         🔒 โหมดหน้าบูท (Admin / POS) — เพิ่ม 2026-11-21
+         3 หน้า: ใส่ PIN → เปิดรอบขาย → หน้าขาย
+         =================================================================== -->
+    <div id="pos-pin-page" class="page">
+        <h1>🔒 โหมดหน้าบูท</h1>
+        <p style="text-align:center; color:#64748b; font-size:14px;">กรอกรหัสผ่านเพื่อเข้าใช้งาน</p>
+        <div id="pin-dots" class="pin-dots"></div>
+        <div class="pin-pad">
+            <button type="button" onclick="posPinPress('1')">1</button>
+            <button type="button" onclick="posPinPress('2')">2</button>
+            <button type="button" onclick="posPinPress('3')">3</button>
+            <button type="button" onclick="posPinPress('4')">4</button>
+            <button type="button" onclick="posPinPress('5')">5</button>
+            <button type="button" onclick="posPinPress('6')">6</button>
+            <button type="button" onclick="posPinPress('7')">7</button>
+            <button type="button" onclick="posPinPress('8')">8</button>
+            <button type="button" onclick="posPinPress('9')">9</button>
+            <button type="button" class="alt" onclick="posPinCancel()">ยกเลิก</button>
+            <button type="button" onclick="posPinPress('0')">0</button>
+            <button type="button" class="alt" onclick="posPinDel()">⌫ ลบ</button>
+        </div>
+    </div>
+
+    <div id="pos-setup-page" class="page">
+        <h1>📍 เปิดรอบขาย</h1>
+        <p style="text-align:center; color:#64748b; font-size:14px; margin-bottom:18px;">กรอกครั้งเดียว ใช้ได้ทั้งวัน</p>
+        <div class="form-group">
+            <label>📅 วันที่ขาย <small style="font-weight:400; color:#64748b;">(ใช้ตัดโควตาในระบบ)</small></label>
+            <input type="date" id="pos-date">
+        </div>
+        <div class="form-group">
+            <label>📍 สถานที่ขาย</label>
+            <input type="text" id="pos-place" placeholder="เช่น บูทตลาดนัด มจธ.">
+            <div id="pos-recent-places" style="margin-top:8px;"></div>
+        </div>
+        <button class="btn-main" onclick="posStartSession()">เริ่มขาย ➔</button>
+        <button type="button" style="border:none; background:none; color:#94a3b8; cursor:pointer; font-family:'Prompt'; margin-top:14px; width:100%;" onclick="posExit()">ออกจากโหมดหน้าบูท</button>
+    </div>
+
+    <div id="pos-main-page" class="page">
+        <div class="pos-bar">
+            <div>
+                <b id="pos-bar-place">—</b><br>
+                <span id="pos-bar-date" style="opacity:0.8;">—</span>
+            </div>
+            <div style="text-align:right;">
+                <span id="pos-queue-badge" class="pos-queue clear">✅ ส่งครบ</span><br>
+                <button type="button" onclick="posShowSetup()" style="margin-top:4px;">เปลี่ยนวัน/ที่</button>
+                <button type="button" onclick="posExit()" style="margin-top:4px;">ออก</button>
+            </div>
+        </div>
+
+        <div class="pos-total">
+            <div class="lbl">ยอดรวมบิลนี้</div>
+            <div class="num"><span id="pos-total-num">0</span> ฿</div>
+        </div>
+
+        <div class="pos-grid" id="pos-item-grid"></div>
+
+        <div id="pos-lines"></div>
+
+        <div class="form-group" style="margin-top:14px; margin-bottom:0;">
+            <input type="text" id="pos-customer-name" placeholder="ชื่อลูกค้า (ไม่บังคับ — ข้ามได้)">
+        </div>
+
+        <div class="pos-pay">
+            <button type="button" class="cash" id="pos-pay-cash" onclick="posSubmit('cash')">💵 เงินสด</button>
+            <button type="button" class="tfer" id="pos-pay-tfer" onclick="posSubmit('transfer')">📱 โอน</button>
+        </div>
+
+        <div class="pos-recap">
+            <div class="row"><span>สรุปวันนี้</span><span id="pos-recap-bills">0 บิล</span></div>
+            <div class="row"><span>จำนวนที่ขาย</span><span id="pos-recap-cups">0 ชิ้น</span></div>
+            <div class="row"><span>💵 เงินสด</span><span id="pos-recap-cash">0 ฿</span></div>
+            <div class="row"><span>📱 โอน</span><span id="pos-recap-tfer">0 ฿</span></div>
+            <div class="row big"><span>ยอดรวม</span><span id="pos-recap-total">0 ฿</span></div>
+            <div id="pos-dup-warn" style="display:none; margin-top:8px; background:#fff3cd; color:#856404; padding:8px; border-radius:8px; font-size:12px;"></div>
+            <button type="button" id="pos-manual-flush" style="display:none; width:100%; margin-top:8px; padding:10px; border:none; border-radius:8px; background:#ffc107; font-family:'Prompt'; font-weight:600; cursor:pointer;" onclick="posFlush(true)">🔄 ลองส่งข้อมูลที่ค้างอีกครั้ง</button>
+        </div>
+    </div>
 </div>
 
+<div id="pos-toast" class="pos-toast"></div>
+
 <script>
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX4sxOiFPW5gMMRfWXq9bGTnki_6aaX_EEk2ApLrv_yy-aKzlQ/exec';
-    
-    let isStockAvailable = true; 
+    // 🟢 2026-11-21: เปลี่ยนเป็น Deployment ใหม่ (เมลเจ้าของใหม่)
+    // URL เดิมของเจ้าของคนก่อน เก็บไว้เผื่อย้อนกลับ:
+    // https://script.google.com/macros/s/AKfycby6lbhvENJbBE-TlBt5OX4sxOiFPW5gMMRfWXq9bGTnki_6aaX_EEk2ApLrv_yy-aKzlQ/exec
+    const scriptUrl = 'https://script.google.com/macros/s/AKfycbx_ATmFn54OMd_E6BIGZvH0iyM4NdRolC4go1pL_DUIvsdsPyYcQjQPSVcf5gkd14Rf/exec';
+
+    // 🟢 2026-11-21: cache ตารางร้านไว้ในเครื่อง เพื่อให้เปิดเว็บเร็วขึ้น
+    const CACHE_KEY = 'gy_schedule_cache';
+    const CACHE_MAX_AGE = 10 * 60 * 1000; // 10 นาที
+
+    let isStockAvailable = true;
     let shopSchedule = {}; 
     let slipBase64 = ""; 
     
@@ -276,57 +421,95 @@
     let cart = [];
     let currentSelectedSize = "";
 
-   function initApp() {
+    // 🟢 นำผลลัพธ์จากเซิร์ฟเวอร์ไปกำหนดสถานะร้าน (แยกออกมาเพื่อให้เรียกซ้ำได้)
+    function applyConfig(config) {
+        shopSchedule = (config && config.schedule) ? config.schedule : {};
+
+        // เช็คว่ามีวันเปิดร้าน (ที่คิวยังไม่เต็ม) หรือไม่
+        let hasAvailableDay = false;
+        let today = new Date();
+        today.setHours(0, 0, 0, 0); // รีเซ็ตเวลาเป็นเที่ยงคืนเพื่อเทียบแค่วันที่
+
+        for (let dateKey in shopSchedule) {
+            let checkDate = new Date(dateKey);
+            let dayData = shopSchedule[dateKey];
+
+            // ถ้ารอบส่งเป็นวันนี้หรือวันในอนาคต / ยังไม่ปิดการขาย / และมีรอบส่งอย่างน้อย 1 รอบ
+            // 🟢 2026-11-21: เพิ่มเช็ค isFull ให้ตรงกับหน้า checkout (เดิมหน้าแรกไม่เช็ค)
+            if (checkDate >= today && !dayData.isFull && (dayData.morning || dayData.afternoon || dayData.night)) {
+                // และโควตายังไม่เต็ม (หรือไม่ได้ตั้งโควตาไว้คือ 0)
+                if (dayData.quota === 0 || dayData.booked < dayData.quota) {
+                    hasAvailableDay = true;
+                    break; // เจอแค่วันเดียวที่ว่าง ก็ถือว่าร้านเปิดรับออเดอร์
+                }
+            }
+        }
+
+        isStockAvailable = hasAvailableDay;
+
+        const statusBox = document.getElementById('stock-status');
+        const mainOrderBtn = document.getElementById('main-order-btn');
+
+        if (!isStockAvailable) {
+            // กรณีไม่มีวันส่งของเลย หรือคิวเต็มหมดแล้ว
+            statusBox.className = 'status-badge sold-out';
+            statusBox.innerHTML = '❌ ปิดรับออเดอร์ / คิวเต็มหมดแล้วค่ะ';
+            mainOrderBtn.innerText = 'ปิดรับออเดอร์ชั่วคราว';
+            mainOrderBtn.disabled = true;
+        } else {
+            // กรณีมีวันส่งของให้เลือก
+            statusBox.className = 'status-badge available';
+            statusBox.innerHTML = '✅ วันนี้เปิดร้านนะคะ 🍯✨';
+            mainOrderBtn.innerText = 'สั่งเลย 😋';
+            mainOrderBtn.disabled = false;
+        }
+    }
+
+    function showApp() {
+        document.getElementById('loading-screen').style.display = 'none';
+        goToPage('home-page');
+    }
+
+    // 🟢 2026-11-21: โหลดตารางร้านแบบ cache-first
+    // เปิดเว็บเห็นหน้าทันทีจากข้อมูลที่จำไว้ แล้วค่อยอัปเดตเบื้องหลัง (ไม่ต้องจอขาวรอ)
+    function loadConfig() {
+        let cached = null;
+        try { cached = JSON.parse(localStorage.getItem(CACHE_KEY)); } catch (e) { cached = null; }
+
+        let shownFromCache = false;
+        if (cached && cached.config && (Date.now() - cached.ts) < CACHE_MAX_AGE) {
+            applyConfig(cached.config);
+            showApp();
+            shownFromCache = true;
+        }
+
         fetch(scriptUrl)
         .then(response => response.json())
         .then(config => {
-            shopSchedule = config.schedule; 
-            
-            // 🟢 เพิ่มลอจิกเช็คว่ามีวันเปิดร้าน (ที่คิวยังไม่เต็ม) หรือไม่
-            let hasAvailableDay = false;
-            let today = new Date();
-            today.setHours(0, 0, 0, 0); // รีเซ็ตเวลาเป็นเที่ยงคืนเพื่อเทียบแค่วันที่
-
-            for (let dateKey in shopSchedule) {
-                let checkDate = new Date(dateKey);
-                let dayData = shopSchedule[dateKey];
-                
-                // ถ้ารอบส่งเป็นวันนี้หรือวันในอนาคต และมีการเปิดรอบส่งอย่างน้อย 1 รอบ
-                if (checkDate >= today && (dayData.morning || dayData.afternoon || dayData.night)) {
-                    // และโควตายังไม่เต็ม (หรือไม่ได้ตั้งโควตาไว้คือ 0)
-                    if (dayData.quota === 0 || dayData.booked < dayData.quota) {
-                        hasAvailableDay = true;
-                        break; // เจอแค่วันเดียวที่ว่าง ก็ถือว่าร้านเปิดรับออเดอร์
-                    }
-                }
-            }
-
-            // นำผลลัพธ์ไปกำหนดสถานะร้าน
-            isStockAvailable = hasAvailableDay; 
-
-            const statusBox = document.getElementById('stock-status');
-            const mainOrderBtn = document.getElementById('main-order-btn'); 
-
-            if (!isStockAvailable) {
-                // กรณีไม่มีวันส่งของเลย หรือคิวเต็มหมดแล้ว
-                statusBox.className = 'status-badge sold-out';
-                statusBox.innerHTML = '❌ ปิดรับออเดอร์ / คิวเต็มหมดแล้วค่ะ';
-                mainOrderBtn.innerText = 'ปิดรับออเดอร์ชั่วคราว';
-                mainOrderBtn.disabled = true; 
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), config: config })); } catch (e) {}
+            applyConfig(config);
+            if (!shownFromCache) showApp();
+        })
+        .catch(err => {
+            if (shownFromCache) return; // แสดงจาก cache ไปแล้ว ไม่ต้องทำอะไร
+            if (cached && cached.config) {
+                // เน็ตมีปัญหา แต่ยังมีข้อมูลเก่าอยู่ → ใช้ของเก่าไปก่อน พร้อมเตือน
+                applyConfig(cached.config);
+                showApp();
+                const warn = document.getElementById('stale-warning');
+                if (warn) warn.style.display = 'block';
             } else {
-                // กรณีมีวันส่งของให้เลือก
-                statusBox.className = 'status-badge available';
-                statusBox.innerHTML = '✅ วันนี้เปิดร้านนะคะ 🍯✨';
-                mainOrderBtn.disabled = false; 
+                document.getElementById('loading-screen').innerHTML =
+                    '⚠️ โหลดข้อมูลไม่สำเร็จ<br><span style="font-size:14px;color:#666;">กรุณาเช็คอินเทอร์เน็ตแล้วเปิดใหม่อีกครั้งค่ะ</span>';
             }
-            
-            document.getElementById('loading-screen').style.display = 'none';
-            goToPage('home-page');
-        }).catch(err => {
-            document.getElementById('loading-screen').innerHTML = '⚠️ โหลดข้อมูลไม่สำเร็จ';
         });
     }
-    initApp();
+
+    function initApp() {
+        if (posBoot()) return; // 🔒 โหมดหน้าบูท: ไม่ต้องรอตารางร้าน เข้าใช้งานได้ทันที
+        loadConfig();
+    }
+    // หมายเหตุ: initApp() ถูกเรียกที่บรรทัดสุดท้ายของสคริปต์ (หลังประกาศค่าของโหมดหน้าบูทครบแล้ว)
 
     // ระบบนำทางระหว่างหน้า
     function goToPage(pageId) {
@@ -472,7 +655,7 @@
                             <span>${item.quantity}</span>
                             <button type="button" class="qty-btn" onclick="updateCartQty(${index}, 1)">+</button>
                         </div>
-                        <button type="button" class="remove-btn" onclick="removeCartItem(${index})"><i class="fas fa-trash"></i> ลบ</button>
+                        <button type="button" class="remove-btn" onclick="removeCartItem(${index})">🗑️ ลบ</button>
                     </div>
                 </div>
             `;
@@ -544,7 +727,7 @@
                     hasRound = true; 
                 }
                 if (dayConfig.night) {
-                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบดึก (หลัง 18:00)" onchange="updateCheckoutTotal()" required> รอบดึกหลัง 18.00 (บวกค่าส่ง 10.-)</label>`;
+                    roundContainer.innerHTML += `<label class="checkbox-label"><input type="radio" name="delivery-round" value="รอบดึก (หลัง 18:00)" onchange="updateCheckoutTotal()" required> <span>รอบดึก หลัง 18:00<br><small style="color:#0056b3;">🎓 ส่งเฉพาะในมหาวิทยาลัย • ไม่มีค่าส่ง</small></span></label>`;
                     hasRound = true;
                 }
                 if (!hasRound) roundContainer.innerHTML = '<p style="color: #c62828; margin: 0; font-weight: bold;">❌ วันนี้ปิดรับออเดอร์ค่ะ</p>';
@@ -557,13 +740,8 @@
 
     function updateCheckoutTotal() {
         // ยอดรวมตะกร้า
+        // 🟢 2026-11-21: ยกเลิกค่าส่งรอบดึก 10 บาท (รอบดึกส่งเฉพาะในมหาวิทยาลัย ไม่มีค่าส่ง)
         let finalTotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
-        
-        // บวกรอบดึก
-        const selectedRound = document.querySelector('input[name="delivery-round"]:checked');
-        if (selectedRound && selectedRound.value.includes("รอบดึก")) {
-            finalTotal += 10; 
-        }
 
         document.getElementById('checkout-total-display').innerText = finalTotal;
         document.getElementById('payment-total-display').innerText = finalTotal;
@@ -632,7 +810,7 @@
         .then(data => {
             if (data.status === "success") {
                 alert('🎉 สั่งซื้อสำเร็จ! แม่ค้าได้รับออเดอร์แล้วค่ะ');
-                location.reload(); 
+                resetAfterOrder(); // 🟢 2026-11-21: รีเซ็ตด้วย JS แทน location.reload() (เร็วกว่ามาก)
             } else {
                 alert('❌ เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: ' + data.message);
                 submitBtn.disabled = false;
@@ -642,6 +820,41 @@
             alert('❌ มีข้อผิดพลาด! กรุณาลองใหม่อีกครั้ง');
             submitBtn.disabled = false;
         });
+    }
+
+    // 🟢 2026-11-21: รีเซ็ตหน้าเว็บหลังสั่งซื้อสำเร็จ โดยไม่ต้องโหลดเว็บใหม่ทั้งหน้า
+    function resetAfterOrder() {
+        cart = [];
+        slipBase64 = "";
+        currentSelectedSize = "";
+
+        document.getElementById('order-form').reset();
+        const slipFile = document.getElementById('slip-file');
+        if (slipFile) slipFile.value = "";
+        const slipPreview = document.getElementById('slip-preview');
+        if (slipPreview) { slipPreview.style.display = 'none'; slipPreview.src = ""; }
+
+        document.getElementById('delivery-round-container').innerHTML =
+            '<p style="color: #666; margin: 0; font-size: 14px;">กรุณาเลือกวันที่ก่อนค่ะ...</p>';
+
+        // คืนปุ่มให้กดได้อีกครั้ง
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        if (checkoutBtn) { checkoutBtn.disabled = false; checkoutBtn.innerText = 'ดำเนินการชำระเงิน'; }
+        if (submitBtn) { submitBtn.disabled = false; submitBtn.innerText = 'ยืนยันออเดอร์และส่งสลิป'; }
+
+        updateCartBadge();
+        renderCartUI();
+        goToPage('home-page');
+
+        // ดึงตารางร้านใหม่เบื้องหลัง (โควตาเพิ่งถูกใช้ไป)
+        fetch(scriptUrl)
+            .then(r => r.json())
+            .then(config => {
+                try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), config: config })); } catch (e) {}
+                applyConfig(config);
+            })
+            .catch(e => {});
     }
 
     function checkStatus() {
@@ -666,6 +879,427 @@
             }
         });
     }
+
+    /* ===================================================================
+       🔒 โหมดหน้าบูท (Admin / POS) — เพิ่ม 2026-11-21
+       - ลูกค้าออนไลน์ไม่เห็นและไม่ถูกกระทบใด ๆ
+       - ทางเข้า: ต่อท้าย URL ด้วย #pos  หรือ  แตะหัวข้อหน้าแรก 5 ครั้งใน 3 วินาที
+       - ส่งข้อมูลรูปแบบเดียวกับฟอร์มออนไลน์ ลง Sheet1 คอลัมน์เดิมทั้ง 13 คอลัมน์
+       =================================================================== */
+
+    const POS_PIN = '008493';
+    const POS_K = {
+        unlocked: 'gy_pos_unlocked',
+        session:  'gy_pos_session',
+        queue:    'gy_pos_queue',
+        log:      'gy_pos_log',
+        places:   'gy_pos_places'
+    };
+
+    // รายการสินค้าหน้าบูท — ข้อความ texture/toppings ตรงกับที่ฟอร์มออนไลน์บันทึก
+    const POS_ITEMS = [
+        { id:'r30',  sizeType:'regular', price:30,  label:'ปกติ 30',        sub:'น้ำผึ้ง',                  color:'#1a53ad', texture:'ไซส์ปกติ (30.-)',           toppings:'น้ำผึ้ง' },
+        { id:'r39c', sizeType:'regular', price:39,  label:'39 +แครกเกอร์',  sub:'น้ำผึ้ง + แครกเกอร์',      color:'#1a53ad', texture:'ไซส์ปกติ (39.-)',           toppings:'น้ำผึ้ง, แครกเกอร์' },
+        { id:'r39b', sizeType:'regular', price:39,  label:'39 +กล้วย',      sub:'น้ำผึ้ง + กล้วย',          color:'#1a53ad', texture:'ไซส์ปกติ (39.-)',           toppings:'น้ำผึ้ง, กล้วย' },
+        { id:'r39a', sizeType:'regular', price:39,  label:'39 +ทั้งคู่',    sub:'น้ำผึ้ง + แครกเกอร์ + กล้วย', color:'#1a53ad', texture:'ไซส์ปกติ (39.-)',        toppings:'น้ำผึ้ง, แครกเกอร์, กล้วย' },
+        { id:'sp',   sizeType:'special', price:69,  label:'พิเศษ 69',       sub:'ท็อปปิ้งครบ',              color:'#d19c00', texture:'ไซส์พิเศษ (69.-)',          toppings:'น้ำผึ้ง, แครกเกอร์, กล้วย' },
+        { id:'g500', sizeType:'500g',    price:329, label:'500 g · 329',    sub:'กรีกล้วน',                 color:'#17a2b8', texture:'กรีกล้วน 500 g (329.-)',    toppings:'-' },
+        { id:'g1k',  sizeType:'1kg',     price:549, label:'1 kg · 549',     sub:'กรีกล้วน',                 color:'#17a2b8', texture:'กรีกล้วน 1 kg (549.-)',     toppings:'-' }
+    ];
+
+    let posCart = [];          // [{ id, qty }]
+    let posPinBuffer = '';
+    let posFlushing = false;
+    let posRetryTimer = null;
+    let posTapCount = 0;
+    let posTapTimer = null;
+
+    // ---------- ตัวช่วยอ่าน/เขียน localStorage (กันกรณีเบราว์เซอร์ปิดการใช้งาน) ----------
+    function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+    function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    function lsDel(k) { try { localStorage.removeItem(k); } catch (e) {} }
+    function jsonGet(k, fallback) { try { const v = JSON.parse(lsGet(k)); return v || fallback; } catch (e) { return fallback; } }
+
+    function posToday() {
+        const d = new Date();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return d.getFullYear() + '-' + m + '-' + day;
+    }
+
+    function posToast(msg) {
+        const t = document.getElementById('pos-toast');
+        t.innerText = msg;
+        t.style.display = 'block';
+        clearTimeout(t._timer);
+        t._timer = setTimeout(() => { t.style.display = 'none'; }, 1600);
+    }
+
+    // ---------- ทางเข้า ----------
+    function posBoot() {
+        if (location.hash !== '#pos') return false;
+        document.getElementById('loading-screen').style.display = 'none';
+        if (lsGet(POS_K.unlocked) === '1') posAfterUnlock();
+        else posShowPin();
+        return true;
+    }
+
+    // แตะหัวข้อหน้าแรก 5 ครั้งใน 3 วินาที (ทางเข้าสำรองเผื่อลืม URL)
+    function secretTap() {
+        posTapCount++;
+        clearTimeout(posTapTimer);
+        posTapTimer = setTimeout(() => { posTapCount = 0; }, 3000);
+        if (posTapCount >= 5) {
+            posTapCount = 0;
+            if (lsGet(POS_K.unlocked) === '1') posAfterUnlock();
+            else posShowPin();
+        }
+    }
+
+    function posShowPin() {
+        posPinBuffer = '';
+        posRenderPin();
+        goToPage('pos-pin-page');
+    }
+
+    function posRenderPin() {
+        document.getElementById('pin-dots').innerText = '•'.repeat(posPinBuffer.length);
+    }
+
+    function posPinPress(d) {
+        if (posPinBuffer.length >= POS_PIN.length) return;
+        posPinBuffer += d;
+        posRenderPin();
+        if (posPinBuffer.length === POS_PIN.length) {
+            if (posPinBuffer === POS_PIN) {
+                lsSet(POS_K.unlocked, '1');
+                posAfterUnlock();
+            } else {
+                posPinBuffer = '';
+                posRenderPin();
+                posToast('❌ รหัสไม่ถูกต้อง');
+            }
+        }
+    }
+
+    function posPinDel() { posPinBuffer = posPinBuffer.slice(0, -1); posRenderPin(); }
+
+    function posPinCancel() {
+        posPinBuffer = '';
+        if (location.hash === '#pos') { location.href = location.pathname; return; }
+        goToPage('home-page');
+    }
+
+    // ปลดล็อกแล้ว: ถ้ารอบขายยังเป็นของวันนี้ก็เข้าหน้าขายเลย ไม่ต้องกรอกซ้ำ
+    function posAfterUnlock() {
+        const s = jsonGet(POS_K.session, null);
+        if (s && s.place && s.date && s.savedOn === posToday()) posStartMain();
+        else posShowSetup();
+    }
+
+    // ---------- หน้าเปิดรอบขาย ----------
+    function posShowSetup() {
+        const s = jsonGet(POS_K.session, null);
+        document.getElementById('pos-date').value = (s && s.date) ? s.date : posToday();
+        document.getElementById('pos-place').value = (s && s.place) ? s.place : '';
+
+        const places = jsonGet(POS_K.places, []);
+        const box = document.getElementById('pos-recent-places');
+        box.innerHTML = places.length
+            ? '<div style="font-size:12px;color:#64748b;margin-bottom:4px;">ที่เคยขาย (แตะเพื่อเลือก)</div>' +
+              places.map(p => `<span class="pos-chip" onclick="posPickPlace(this)">${p}</span>`).join('')
+            : '';
+        goToPage('pos-setup-page');
+    }
+
+    function posPickPlace(el) { document.getElementById('pos-place').value = el.innerText; }
+
+    function posStartSession() {
+        const date = document.getElementById('pos-date').value;
+        const place = document.getElementById('pos-place').value.trim();
+        if (!date) { alert('กรุณาเลือกวันที่ขายค่ะ'); return; }
+        if (!place) { alert('กรุณากรอกสถานที่ขายค่ะ'); return; }
+
+        lsSet(POS_K.session, JSON.stringify({ date: date, place: place, savedOn: posToday() }));
+
+        // จำสถานที่ล่าสุด 5 แห่ง
+        let places = jsonGet(POS_K.places, []).filter(p => p !== place);
+        places.unshift(place);
+        lsSet(POS_K.places, JSON.stringify(places.slice(0, 5)));
+
+        posCart = [];
+        posStartMain();
+    }
+
+    // ---------- หน้าขาย ----------
+    function posStartMain() {
+        const s = jsonGet(POS_K.session, null);
+        if (!s) { posShowSetup(); return; }
+
+        document.getElementById('pos-bar-place').innerText = '📍 ' + s.place;
+        document.getElementById('pos-bar-date').innerText = '📅 ' + s.date;
+
+        document.getElementById('pos-item-grid').innerHTML =
+            POS_ITEMS.map(it =>
+                `<button type="button" class="pos-btn" style="background:${it.color};" onclick="posAdd('${it.id}')">${it.label}<small>${it.sub}</small></button>`
+            ).join('') +
+            `<button type="button" class="pos-btn clearbtn wide" onclick="posClear()">🗑️ ล้างบิลนี้</button>`;
+
+        posRenderCart();
+        posRenderRecap();
+        posRenderQueue();
+        goToPage('pos-main-page');
+        posFlush();
+    }
+
+    function posAdd(id) {
+        const line = posCart.find(l => l.id === id);
+        if (line) line.qty++;
+        else posCart.push({ id: id, qty: 1 });
+        posRenderCart();
+    }
+
+    function posChangeQty(idx, delta) {
+        posCart[idx].qty += delta;
+        if (posCart[idx].qty < 1) posCart.splice(idx, 1);
+        posRenderCart();
+    }
+
+    function posClear() {
+        if (!posCart.length) return;
+        if (confirm('ล้างรายการในบิลนี้ทั้งหมดใช่ไหมคะ?')) {
+            posCart = [];
+            document.getElementById('pos-customer-name').value = '';
+            posRenderCart();
+        }
+    }
+
+    function posTotal() {
+        return posCart.reduce((sum, l) => {
+            const it = POS_ITEMS.find(x => x.id === l.id);
+            return sum + (it ? it.price * l.qty : 0);
+        }, 0);
+    }
+
+    function posRenderCart() {
+        document.getElementById('pos-total-num').innerText = posTotal();
+        const box = document.getElementById('pos-lines');
+
+        if (!posCart.length) {
+            box.innerHTML = '<p style="text-align:center;color:#94a3b8;font-size:13px;padding:10px 0;">แตะปุ่มสินค้าด้านบนเพื่อเริ่มบิลใหม่</p>';
+        } else {
+            box.innerHTML = posCart.map((l, i) => {
+                const it = POS_ITEMS.find(x => x.id === l.id);
+                return `<div class="pos-line">
+                    <div class="pos-line-name">${it.label}<small>${it.sub}</small></div>
+                    <div class="pos-line-right">
+                        <button type="button" class="qty-btn" onclick="posChangeQty(${i},-1)">−</button>
+                        <span style="min-width:22px;text-align:center;">${l.qty}</span>
+                        <button type="button" class="qty-btn" onclick="posChangeQty(${i},1)">+</button>
+                        <span class="amt">${it.price * l.qty} ฿</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        const empty = posCart.length === 0;
+        document.getElementById('pos-pay-cash').disabled = empty;
+        document.getElementById('pos-pay-tfer').disabled = empty;
+    }
+
+    // ---------- บันทึกการขาย ----------
+    function posSubmit(payType) {
+        if (!posCart.length) return;
+        const s = jsonGet(POS_K.session, null);
+        if (!s) { posShowSetup(); return; }
+
+        const name = document.getElementById('pos-customer-name').value.trim();
+
+        const items = posCart.map(l => {
+            const it = POS_ITEMS.find(x => x.id === l.id);
+            return {
+                sizeType:   it.sizeType,
+                quantity:   l.qty,
+                unitPrice:  it.price,
+                totalPrice: it.price * l.qty,
+                texture:    it.texture,
+                toppings:   it.toppings
+            };
+        });
+
+        const payload = {
+            customerName:  name || 'ลูกค้าหน้าบูท',
+            customerPhone: '',
+            deliveryDate:  s.date,                 // → คอลัมน์ H ใช้ตัดโควตา
+            deliveryRound: 'หน้าบูท (รับทันที)',   // → คอลัมน์ I ใช้แยกช่องทาง
+            address:       s.place,                // → คอลัมน์ J
+            paymentMethod: (payType === 'cash') ? 'เงินสด (หน้าบูท)' : 'โอนเงิน (หน้าบูท)',
+            orderStatus:   'รับของแล้ว ✅',        // → คอลัมน์ M
+            slipBase64:    '',
+            slipFileName:  '',
+            items:         items
+        };
+
+        const total = posTotal();
+
+        // บันทึกลงคิวก่อน แล้วเคลียร์หน้าจอทันที (ไม่ต้องรอเซิร์ฟเวอร์)
+        posQueuePush(payload);
+        posLogAdd(payload);
+
+        posCart = [];
+        document.getElementById('pos-customer-name').value = '';
+        posRenderCart();
+        posRenderRecap();
+        posToast('✅ บันทึกแล้ว ' + total + ' ฿');
+
+        posFlush();
+    }
+
+    // ---------- คิวส่งข้อมูล (ขายต่อได้แม้เน็ตหลุด) ----------
+    function posQueueGet() { return jsonGet(POS_K.queue, []); }
+    function posQueueSave(q) { lsSet(POS_K.queue, JSON.stringify(q)); }
+
+    function posQueuePush(payload) {
+        const q = posQueueGet();
+        q.push({
+            ref: Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+            payload: payload,
+            tries: 0
+        });
+        posQueueSave(q);
+        posRenderQueue();
+    }
+
+    function posRenderQueue() {
+        const q = posQueueGet();
+        const badge = document.getElementById('pos-queue-badge');
+        const manual = document.getElementById('pos-manual-flush');
+        if (!badge) return;
+
+        if (q.length) {
+            badge.className = 'pos-queue pending';
+            badge.innerText = '⏳ รอส่ง ' + q.length;
+            if (manual) manual.style.display = (q[0].tries >= 3) ? 'block' : 'none';
+        } else {
+            badge.className = 'pos-queue clear';
+            badge.innerText = '✅ ส่งครบ';
+            if (manual) manual.style.display = 'none';
+        }
+    }
+
+    function posFlush(manual) {
+        if (manual) { clearTimeout(posRetryTimer); posFlushing = false; }
+        if (posFlushing) return;
+
+        const q = posQueueGet();
+        if (!q.length) { posRenderQueue(); return; }
+
+        posFlushing = true;
+        const job = q[0];
+
+        fetch(scriptUrl, { method: 'POST', body: JSON.stringify(job.payload) })
+        .then(r => r.json())
+        .then(d => {
+            posFlushing = false;
+            if (d && d.status === 'success') {
+                const q2 = posQueueGet();
+                const i = q2.findIndex(x => x.ref === job.ref);
+                if (i > -1) {
+                    if (q2[i].tries > 0) posBumpDup(); // ส่งซ้ำสำเร็จ → อาจมีแถวซ้ำใน Sheet
+                    q2.splice(i, 1);
+                    posQueueSave(q2);
+                }
+                posRenderQueue();
+                posFlush(); // ส่งรายการต่อไป
+            } else {
+                posFailJob(job);
+            }
+        })
+        .catch(() => { posFlushing = false; posFailJob(job); });
+    }
+
+    function posFailJob(job) {
+        const q = posQueueGet();
+        const i = q.findIndex(x => x.ref === job.ref);
+        let tries = 1;
+        if (i > -1) { q[i].tries = (q[i].tries || 0) + 1; tries = q[i].tries; posQueueSave(q); }
+        posRenderQueue();
+
+        // ลองใหม่เอง: 5 วิ → 10 → 20 → 40 → สูงสุด 60 วิ
+        const delay = Math.min(60000, 5000 * Math.pow(2, Math.min(4, tries - 1)));
+        clearTimeout(posRetryTimer);
+        posRetryTimer = setTimeout(() => posFlush(), delay);
+    }
+
+    function posBumpDup() {
+        const n = (parseInt(lsGet('gy_pos_dup')) || 0) + 1;
+        lsSet('gy_pos_dup', String(n));
+        const el = document.getElementById('pos-dup-warn');
+        if (el) {
+            el.style.display = 'block';
+            el.innerHTML = '⚠️ มี ' + n + ' รายการที่ต้องส่งซ้ำ อาจเกิดแถวซ้ำใน Google Sheet ควรตรวจก่อนสรุปยอด';
+        }
+    }
+
+    // ---------- สรุปยอดวันนี้ (เก็บในเครื่อง ใช้นับเงินตอนปิดบูท) ----------
+    function posLogAdd(payload) {
+        const today = posToday();
+        let log = jsonGet(POS_K.log, null);
+        if (!log || log.date !== today) log = { date: today, bills: 0, pieces: 0, cash: 0, transfer: 0 };
+
+        const pieces = payload.items.reduce((s, i) => s + i.quantity, 0);
+        const amount = payload.items.reduce((s, i) => s + i.totalPrice, 0);
+
+        log.bills += 1;
+        log.pieces += pieces;
+        if (payload.paymentMethod.indexOf('เงินสด') > -1) log.cash += amount;
+        else log.transfer += amount;
+
+        lsSet(POS_K.log, JSON.stringify(log));
+    }
+
+    function posRenderRecap() {
+        const today = posToday();
+        let log = jsonGet(POS_K.log, null);
+        if (!log || log.date !== today) log = { date: today, bills: 0, pieces: 0, cash: 0, transfer: 0 };
+
+        document.getElementById('pos-recap-bills').innerText = log.bills + ' บิล';
+        document.getElementById('pos-recap-cups').innerText  = log.pieces + ' ชิ้น';
+        document.getElementById('pos-recap-cash').innerText  = log.cash + ' ฿';
+        document.getElementById('pos-recap-tfer').innerText  = log.transfer + ' ฿';
+        document.getElementById('pos-recap-total').innerText = (log.cash + log.transfer) + ' ฿';
+
+        const dup = parseInt(lsGet('gy_pos_dup')) || 0;
+        const el = document.getElementById('pos-dup-warn');
+        if (dup > 0 && el) {
+            el.style.display = 'block';
+            el.innerHTML = '⚠️ มี ' + dup + ' รายการที่ต้องส่งซ้ำ อาจเกิดแถวซ้ำใน Google Sheet ควรตรวจก่อนสรุปยอด';
+        }
+    }
+
+    // ---------- ออกจากโหมด ----------
+    function posExit() {
+        if (posQueueGet().length) {
+            if (!confirm('⚠️ ยังมีออเดอร์ที่ยังส่งไม่สำเร็จ ' + posQueueGet().length + ' รายการ\nถ้าออกตอนนี้ต้องกลับเข้าโหมดนี้ในเครื่องเดิมเพื่อส่งต่อ\nยืนยันออกใช่ไหมคะ?')) return;
+        }
+        lsDel(POS_K.unlocked);
+        location.href = location.pathname; // กลับไปหน้าเว็บลูกค้าปกติ
+    }
+
+    // เน็ตกลับมา → ลองส่งคิวที่ค้างทันที
+    window.addEventListener('online', () => posFlush(true));
+
+    // เตือนก่อนปิดหน้าถ้ายังมีออเดอร์ค้างในคิว
+    window.addEventListener('beforeunload', function (e) {
+        if (posQueueGet().length > 0 && lsGet(POS_K.unlocked) === '1') {
+            e.preventDefault();
+            e.returnValue = '';
+            return '';
+        }
+    });
+
+    // ===== เริ่มทำงาน (ต้องอยู่บรรทัดสุดท้าย) =====
+    initApp();
 </script>
 </body>
 </html>
